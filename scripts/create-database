@@ -1,0 +1,82 @@
+#!/bin/sh
+PATH=$PATH:/usr/local/mysql/bin
+
+if test ! -d scripts
+then
+    echo "ERROR: Must be executed from the tracker document root." >&2
+    exit 1
+fi
+
+SCHEMA_FILE=maintenance/create-schema.sql
+CONTENT_FILE=maintenance/load-tables.sql
+
+if test ! -f $SCHEMA_FILE
+then
+    echo "ERROR: The schema creation script \"$SCHEMA_FILE\" is missing." >&2
+    exit 2
+fi
+if test ! -f $CONTENT_FILE
+then
+    echo "ERROR: The schema creation script \"$CONTENT_FILE\" is missing." >&2
+    exit 2
+fi
+
+
+MINUTE=`date +%M`
+ERROR=true
+if test "x$1" = "x-f"
+then
+    if test "$2" -eq $MINUTE
+    then
+	ERROR=false
+    fi
+fi
+
+if $ERROR
+then
+    cat <<EOF
+
+** WARNING ** WARNING ** WARNING ** WARNING **
+
+This script DROPS and recreates the tracker database, leaving it empty.
+It is very dangerous.
+
+You can only invoke this with the -f # option.  The # is a number,
+the current minute of the hour.  Use the "date" command to get the
+current minute and invoke this command again with the option
+
+    -f #
+
+where # is the current minute 0 through 59.  This interlock
+exists to help you prevent shooting yourself in your foot.
+
+If you are absolutely postive that you know what you are doing,
+run this script again with the -f # option.
+
+EOF
+    exit 0;
+fi
+
+DATABASE=`scripts/db-params -n`
+HOST=`scripts/db-params -h`
+USER=`scripts/db-params -u`
+PASSWORD=`scripts/db-params -p`
+
+##
+## NOTE: change this if you use a different user to create
+##       databases in mysql
+##
+AUTH_USER=root
+
+echo "You will be prompted for the database password for $AUTH_USER"
+
+mysql --user=${AUTH_USER} --password <<EOF
+  drop database if exists $DATABASE; 
+  create database $DATABASE; 
+  grant select,insert,update,delete,create,drop,alter on ${DATABASE}.* to ${USER}@${HOST} identified by '${PASSWORD}';
+  flush privileges;
+  use $DATABASE;
+  source $SCHEMA_FILE;
+  source $CONTENT_FILE;
+EOF
+

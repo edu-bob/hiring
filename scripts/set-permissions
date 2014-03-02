@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# make sure we're in the right directoy.  The user may have
+# chdir to the scripts directoy
+
+if test -f candidates.cgi -o -f candidate.cgi
+then
+	:
+elif test -f ../candidates.cgi -o -f candidate.cgi
+then
+	cd ..
+else
+	echo This must be run from the main code directory or below >&2
+	exit 1
+fi
+
+set -x
+find . -name '*~' -exec rm -f '{}' ';'
+find . -exec chmod o-w,a+r,a-x '{}' ';'
+find scripts -exec chmod a+rx '{}' ';'
+find . -name \*.sh -exec chmod a+rx '{}' ';'
+find . -name \*.pl -exec chmod a+rx '{}' ';'
+find . -type d -exec chmod a+x '{}' ';'
+find . -name \*.cgi -exec chmod a+x '{}' ';'

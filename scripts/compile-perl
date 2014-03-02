@@ -1,0 +1,7 @@
+#!/bin/sh
+
+for i in *.cgi
+do
+	echo ========================== $i
+	perl -c $i
+done

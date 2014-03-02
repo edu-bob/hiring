@@ -1,0 +1,5 @@
+#!/bin/sh
+
+DIR=/var/www/vhosts/hiring.education.com/htdocs
+rsync -av . $DIR
+

@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+
+use CPAN;
+
+my @modules = qw(
+		 Params::Validate
+		 Class::Singleton
+		 URI
+		 Mysql
+		 LWP::UserAgent
+		 Module::Build
+		 DateTime::Locale
+		 DateTime::TimeZone
+		 DateTime
+		 HTML::TreeBuilder
+		 Mail::Mailer
+);
+
+for my $mod (@modules) {
+        my $obj = CPAN::Shell->expand('Module',$mod);
+        $obj->install;
+}

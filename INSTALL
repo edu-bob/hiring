@@ -1,0 +1,348 @@
+Candidate Tracker
+-----------------
+
+Copyright (c) 2006, Robert L. Brown.  Use of this application is
+restricted to those individuals and corporations that have been given
+explicit right-to-use by Robert L. Brown.  No redistribution rights
+are granted.  This software is delivered "as is" - no warranty exists
+and it can only be used if the license holder agrees to indemnify
+Robert L. Brown against any claims of damage or loss of productivity.
+
+rlb@openeye.com
+
+That said, this is a sweet application.
+
+The Candidate Tracker is a Perl CGI application and requires a web
+server to handle requests. Like any modern web-based application, it
+is not fully self-contained.  Other packages used by this software are
+as follows:
+
+* perl v5.8.6 (other versions work)
+* mysql version 4.1.11 (other versions work)
+* apache 2 (other versions work)
+* various CPAN modules for perl
+
+The parts of installation and configuration are as follows:
+
+* configuration of Apache
+* installation of Perl scripts in a web server docroot directory
+* installation of additional PERL CPAN modules
+* creation of the Candidate Tracker database
+* configuration and customization
+
+======================================================================
+
+BEFORE STARTING
+
+Be sure that the directory containing the mysql commands is in
+your directory search PATH.
+
+======================================================================
+
+CONFIGURE APACHE
+
+* virtual host or not virtual host?
+* must enable CGI script execution from the installation directory
+* must add "index.cgi" as a default "indexer" for directories
+* restart Apache
+
+Apache has to be configured to run the Candidate Tracker.  The two
+typical ways to run the Candidate Tracker are out of a subdirectory of
+a Apache docroot or in the main directory of a virtual host. The
+primary difference is in how you form the URL to get to the tracker.
+In the former case, the URL will be something like
+
+    http://myhost.yourcompany.com/hiring
+
+and in the latter case
+
+    http://hiring.yourcompany.com
+
+This section isn't going to teach you how to set up Apache or virtual
+hosts in Apache; it assumes that you have Apache already installed
+and, if you want to run the tracker in a VirtualHost, that you know
+how to set that up already.
+
+EITHER A: Apache subdirectory installation
+------------------------------------------
+
+If you run the tracker in a subdirectory of your web server's docroot,
+then you must enable certain Apache features for that directory.  The
+configureation lines for httpd.conf should look something like the
+following (changing the first line to be ths document root where you
+are going to install the tracker Perl code):
+
+<Directory /var/www/html/hiring>
+    Order allow,deny
+    Allow from all
+    Options ExecCGI
+    DirectoryIndex index.cgi
+</Directory>
+
+Note the Options and DirectoryIndex directives in the <Directory> tag;
+these are required.
+
+OR B: Apache virtualhost installation
+-------------------------------------
+
+The tracker runs nicely in a VirtualHost and this is the recommended
+environment.  You will need to create a DNS entry for the virtual host
+and edit the Apache httpd.conf file to support it.  A good hostname to
+use is hiring.yourcompany.com.  This is a sample VirtualHost
+definition:
+
+<VirtualHost *:80>
+    ServerName hiring.yourcompany.com
+    ServerAlias hiring
+    DocumentRoot /var/www/virtualhosts/hiring.yourcompany.com
+    ServerAdmin johndoe@yourcompany.com
+    ErrorLog logs/hiring-error_log
+    CustomLog logs/hiring-access_log common
+</VirtualHost>
+<Directory /var/www/virtualhosts/hiring.yourcompany.com>
+    Order allow,deny
+    Allow from all
+    AllowOverride All
+    Options ExecCGI
+    DirectoryIndex index.cgi
+</Directory>
+
+Note the Options and DirectoryIndex directives in the <Directory> tag;
+these are required.
+
+IN EITHER CASE: Apache common configuration
+-------------------------------------------
+Additionally, Apache must be configured to execute cgi scripts for
+files that end in .cgi.  Add the following line to your httpd.conf if
+it is not already there or remove the comment character if it is
+commented out:
+
+AddHandler cgi-script .cgi
+
+Be sure to restart Apache after changing the config file.  First test
+the config file syntax:
+
+    apachectl configtest
+
+and then restart the server if the config test passes:
+
+    apachectl restart
+
+======================================================================
+INSTALL PERL CODE
+
+* install the perl code into the docroot
+* fix file permissions
+* test the web server setup
+
+Move the directory of Perl code and associated subdirectories into the
+docroot of your virtualhost or into a subdirectory of your web server
+docroot, depending on how you confgured Apache.  The distribution is a
+compressed tar file.  cd to the directory where the CGI files are to
+reside and use
+
+       tar -xzvf tracker.tgz
+
+to extract the files.
+----------------------------------------
+Though it shouldn't be necessary, make sure that permissions are set
+up correctly on the files.  There is a shell script
+
+   scripts/set-permissions
+
+that fixes these.
+----------------------------------------
+You can test that the Apache configuration was successful via a test
+page.  Point your browser to the root directory of the virtual host or
+the subdirectory containing the tracker, as in, for example,
+
+    http://hiring.yourcompany.com/test/html.html
+
+It willl tell you if the URL mapping is set up correctly and you can
+click a link on that page which will test the CGI installation.
+
+======================================================================
+
+INSTALL PERL CPAN MODULES
+
+* install the CPAN modules needed
+* test that the Perl code passes compilation tests
+
+As with most Perl programs, a number of CPAN modules must be installed
+in order to run the tracker.  This is thought to be the full list:
+
+URI
+LWP::UserAgent
+DateTime
+HTML::TreeBuilder
+Mail::Mailer
+Mysql
+
+DateTime doesn't install nicely on some systems.  I had to install
+these in the following order to work around dependency problems:
+
+Module::Build
+DateTime::Locale
+DateTime::TimeZone
+DateTime
+
+There is a script that attempts to install these packages for you:
+
+      scripts/install-cpan
+
+It will ask questions; the defaults are adequate.  Installing CPAN
+modules is often problematic.  Expect it.
+----------------------------------------
+You can test that the Perl scripts will all properly execute via
+
+    scripts/compile-perl
+
+This step is not necessary; Perl code does not need to be precompiled.
+
+You can test that all of the Perl modules are installed properly by using
+this URL, properly converted to your host:
+
+      http://hiring.yourcompany.com/test/cpan.cgi
+
+You can also invoke this script from the command line:
+    test/cpan.cgi
+
+If any modules are not found by this script, install them with CPAN.  Run
+
+   perl -MCPAN -e shell
+
+and use the command
+
+    install XXX::YYY
+
+where the module error message says
+
+      Cannot locate XXX/YYY.pm
+
+======================================================================
+
+CREATE THE MYSQL DATABASE
+
+* make sure that mysqld is running
+* create the database with access priviledges
+* create the tables in the database
+* optionally edit and then add baseline configuration data
+
+First make sure that mysqld (the mysql daemon is running).  Type
+
+      mysql --host=serverhost.yourcompany.com
+
+If you are running mysqld on the local host, the --host option is not
+needed. 
+
+If you get an error like "Can't connect to MySQL server" then talk to
+your systems administrator about getting mysqld running.
+----------------------------------------
+The host serving mysql, name of the database, the username, and the
+password are hardcoded in the file DATABASE.pl.  Look at these values
+and if they are acceptable, leave them be.  Otherwise, change them as
+you see fit.
+
+There is a potentially dangerous script
+
+      scripts/create-database
+
+that will drop and recreate an empty tracker database.  In order to
+run it, you must give it the "-f" option followed by the current
+numeric minute 0-59.  You can use the "date" command to determine what
+the operating system thinks is the current minute.
+
+    scripts/create-database -f 27
+
+for example.
+
+You will be prompted for the password for the user named in the script as the
+one who can create and drop databases.  If you just installed mysql, this will
+probably be "root" and the password will be empty.
+
+If this script runs successfully, the results will be
+ -- the database created with the proper permissions
+ -- the tables created, empty
+ -- the tables populated with default settings
+
+Test the installation with
+     http://localhost/hiring/test/sql.cgi
+
+
+======================================================================
+CONFIGURATION AND CUSTOMIZATION
+
+* Your local administration user
+* Local settings in the "param" table
+* departments table
+* "action" and and "action category" tables
+
+----------------------------------------
+The Tracker has, after installation, a single user named "Set up User" with
+administrative provileges.  You need to add your own user with administrative
+privileges and delete this one.
+
+You should see a yellow warning box on the home page alerting you to the fact
+that the Set Up User still exists.  That box will have a link to the screen to
+manage user accounts.
+
+BE SURE TO CREATE A USER WITH ADMIN PRIVILEGE BEFORE DELETING THE SET UP USER.
+
+Once you have added your own admin user and deleted the start-up one, log out
+and then back in again.
+----------------------------------------
+
+These are the 'name'd parameters that are configurable in the parameter table:
+
+mysqldump - path to the mysql dump program (default usually works)
+
+image - URL of an image for the home page.  The default image is 248x176 GIF
+
+title - the title that goes on the home page
+
+e-mail-from - who the e-mail comes from if tracker can't identify the user.
+
+frontlinks-anyone - set to Y to allow anyone to edit the home page quick links
+
+show-sql -- set to Y to enable the "SQL" button in the page footers, largely for
+            debugging.
+
+hostname -- the name of the host.  This is only used to for URLs and then only
+            if HTTP_HOST is not defined by the web server.  Apache defines this,
+            so you can just as well leave this out.  But the default is a
+            corporate address that is probably not correct for your installation,
+            so change it or delete it.
+
+----------------------------------------
+Customize the department, action_category, and action tables as instructed to
+do so on the SQL test page.
+
+==================================================================
+
+BACKING UP THE TRACKER
+
+There is a script, scripts/backup-tracker, that can be used to create a CD
+backup of the tracker files and data.  IT REQUIRES MODEST CUSTOMIZATION
+because it is not fully integrated with the tracker code.
+
+Set the values of these variables correctly in this shell script:
+  CGI_DIR
+  MYSQLDATA_DIR
+  TMP_DIR
+
+Assuming that cdrecord is properly configured on your ssystem, this
+acript will write a CD of the tracker program files and the database
+files.
+
+On a new, blank CD, use the script with no parameters.  Afterwards,
+use the "-append" option to add more and more backups to the same CD
+until it runs out of space.  Each backup is placed on a subdirectory
+of the root of the CD; the name of the subdirectory contains the dat
+and time when it was created.
+
+WARNING: before using this script the first time, BE SURE to manually
+back up the mysql database files and the web docroot.  There may be
+error conditions (e.g. missing directories or misconfiguration) that
+could result in it overwriting the CGI files or the database files.  I
+believe I have plugged all of these possibilities, but please practice
+safe back-ups.

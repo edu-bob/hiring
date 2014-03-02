@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+my $F = "DATABASE.pl";
+
+if ( -f "$F" ) {
+    require "$F";
+} elsif ( -f "../$F" ) {
+    require "../$F";
+} else {
+    die "ERROR: Cannot find $F in . or ..\n";
+}
+
+my $sep = "";
+foreach my $arg ( @ARGV ) {
+    if ( $arg eq "-h" ) {
+	print "$sep$::DB_HOST";
+	$sep = " ";
+    }
+    if ( $arg eq "-n" ) {
+	print "$sep$::DB_NAME";
+	$sep = " ";
+    }
+    if ( $arg eq "-u" ) {
+	print "$sep$::DB_USER";
+	$sep = " ";
+    }
+    if ( $arg eq "-p" ) {
+	print "$sep$::DB_PASS";
+	$sep = " ";
+    }
+}
+if ( length $sep > 0 ) {
+    print "\n";
+}
+exit 0;

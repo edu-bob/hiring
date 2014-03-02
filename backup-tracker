@@ -1,0 +1,100 @@
+#!/bin/sh
+# Copyright(c) 2003-2007 Robert L. Brown.  This is licensed software
+# only to be used with an explicit right-to-use license from the
+# copyright holder.
+
+
+##
+## Name of the database
+##
+DATABASE=hiring
+##
+## Directories to back up
+##
+CGI_DIR=/online/virtualhosts/hiring.sv.visiblepath.com
+MYSQLDATA_DIR=/online/lib/mysql/${DATABASE}
+
+##
+## This is where the backup directory clone is created:
+##
+TMP_DIR=/online/tmp/TrackerBackupCD
+
+##
+## This is the device name of the CD-R drive
+##
+DEVICE=/dev/cdrom
+
+##
+## Check if -append is set and if so, append this session to the CD
+##
+append=false
+while test $# -gt 0
+do
+  case "$1" in
+      -help|--help) echo "Usage: $0 [ -append ]" >&2 
+                     exit 0;;
+      -append|--append) append=true ;;
+      *) echo "Unknown option: $1, aborting" >&2
+         exit 1 ;;
+  esac
+  shift
+done
+
+##
+## if append option selected, get the multisession CD track data
+##
+if $append
+then
+  umount /dev/cdrom 2> /dev/null
+  msinfo=`cdrecord -s -msinfo`
+  if expr "$msinfo" : '[0-9][0-9]*,[0-9][0-9]*$' >/dev/null
+  then :
+  else
+     echo "ERROR: Was not able to get the multisession info from the CD, aborting." >&2
+     exit 1
+  fi
+  echo "INFO: Using append mode, msinfo from cdrecord is $msinfo"
+fi
+
+
+##
+## Utility function to make a directory and abort if not created
+##
+function doMakeDirectory() {
+    echo "INFO: making directory: $arg1"
+    rm -rf ${arg1}
+    mkdir -p ${arg1}
+    if test ! -d ${arg1}
+    then
+	echo "ERROR: ${arg1}: creation failed, aborting." >&2
+	exit 1
+    fi
+}
+
+arg1=${TMP_DIR} doMakeDirectory
+
+VOL_ID=Tracker@`date "+%F_%T"`
+
+CLONE_DIR=${TMP_DIR}/${VOL_ID}; arg1=${CLONE_DIR} doMakeDirectory
+CGI_CLONE_DIR=${CLONE_DIR}/cgi; arg1=${CGI_CLONE_DIR} doMakeDirectory
+MYSQLDATA_CLONE_DIR=${CLONE_DIR}/mysql/data/${DATABASE}; arg1=${MYSQLDATA_CLONE_DIR} doMakeDirectory
+
+ISO=${TMP_DIR}/tracker.iso
+rm -f $ISO
+
+cd ${CGI_DIR}
+tar -cf - . | (cd ${CGI_CLONE_DIR} ; tar -xf - )
+
+cd ${MYSQLDATA_DIR}
+tar -cf - . | ( cd ${MYSQLDATA_CLONE_DIR} ; tar -xf - )
+
+mkisofs_C=""
+if $append
+then
+    mkisofs_C="-C $msinfo -M /dev/cdrom"
+fi
+mkisofs -quiet -J -R ${mkisofs_C} -V ${VOL_ID} -o $ISO ${CLONE_DIR}/..
+
+cdrecord -tao -s -multi -eject $ISO
+
+echo ${VOL_ID} done.

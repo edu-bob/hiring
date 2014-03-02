@@ -1,0 +1,11 @@
+#!/bin/sh
+
+DIR=/var/www/vhosts/hiring-test.education.com/htdocs
+rsync -av . $DIR
+
+cp DATABASE.pl ${DIR}
+ed - ${DIR}/DATABASE.pl<<EOF
+/DB_NAME *=/s/hiring/hiring-test/
+w
+q
+EOF

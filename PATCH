@@ -1,0 +1,14 @@
+#!/bin/sh
+##
+## Patch a file (or files) to Candidate tracker production
+##
+
+HOST=redwood.education.com
+DIR=/var/www/vhosts/hiring.education.com/htdocs/
+
+if test $# -lt 1;then
+	files=`svn status|awk '$1=="M" || $1=="A"{print $2}'`
+else
+	files="$*"
+fi
+rsync -avR $files root@${HOST}:${DIR}
