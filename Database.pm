@@ -177,7 +177,7 @@ sub SQLSend(@)
 
 sub SQLMoreData()
 {
-    if (defined @::fetchahead) {
+    if (@::fetchahead) {
         return 1;
     }
     if (@::fetchahead = $sth->fetchrow_array()) {
@@ -198,7 +198,7 @@ sub SQLInsertId()
 
 sub SQLFetchData()
 {
-    if (defined @::fetchahead) {
+    if (@::fetchahead) {
         my @result = @::fetchahead;
         undef @::fetchahead;
         return @result;

@@ -19,10 +19,10 @@
 
 DROP TABLE IF EXISTS `action`;
 CREATE TABLE `action` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `action` varchar(32) default NULL,
   `precedence` mediumint(9) default NULL,
-  `category_id` int(10) unsigned default NULL,
+  `category_id` int unsigned default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -32,7 +32,7 @@ CREATE TABLE `action` (
 
 DROP TABLE IF EXISTS `action_category`;
 CREATE TABLE `action_category` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
   `name` varchar(32) default NULL,
   `precedence` int(11) default NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `action_category` (
 
 DROP TABLE IF EXISTS `audit`;
 CREATE TABLE `audit` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
   `type` enum('ADD','CHANGE','REMOVE') NOT NULL default 'CHANGE',
   `dbtable` varchar(32) NOT NULL default '',
@@ -53,9 +53,9 @@ CREATE TABLE `audit` (
   `oldvalue` varchar(100) default NULL,
   `newvalue` varchar(100) default NULL,
   `row` mediumint(9) default NULL,
-  `user_id` mediumint(9) default NULL,
+  `user_id` int unsigned default NULL,
   `join_table` varchar(32) default NULL,
-  `join_id` mediumint(9) default NULL,
+  `join_id` int unsigned default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -65,7 +65,7 @@ CREATE TABLE `audit` (
 
 DROP TABLE IF EXISTS `candidate`;
 CREATE TABLE `candidate` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
   `name` varchar(100) NOT NULL default '',
   `homephone` varchar(24) default NULL,
@@ -73,16 +73,16 @@ CREATE TABLE `candidate` (
   `cellphone` varchar(24) default NULL,
   `homeemail` varchar(100) default NULL,
   `workemail` varchar(100) default NULL,
-  `action_id` mediumint(9) default NULL,
-  `owner_id` mediumint(9) default NULL,
+  `action_id` int unsigned default NULL,
+  `owner_id` int unsigned default NULL,
   `hide` smallint(6) default '0',
-  `opening_id` mediumint(9) default NULL,
+  `opening_id` int unsigned default NULL,
   `modtime` datetime default '1970-01-01 00:00:00',
   `referrer` varchar(40) default NULL,
   `referrer_type` enum('INTERNAL','RECRUITER','WEBSITE','ADVERTISEMENT','BOARDS','OTHER') default NULL,
   `recruiter_ref` varchar(32) default NULL,
   `status` enum('NEW','ACTIVE','REJECTED','HIRED','CLOSED','TEST','SHELVED') NOT NULL default 'NEW',
-  `recruiter_id` int(10) unsigned default NULL,
+  `recruiter_id` int unsigned default NULL,
   `external` varchar(255) default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
@@ -93,9 +93,10 @@ CREATE TABLE `candidate` (
 
 DROP TABLE IF EXISTS `candidate_keyword`;
 CREATE TABLE `candidate_keyword` (
-  `candidate_id` mediumint(9) NOT NULL default '0',
-  `keyword_id` mediumint(9) NOT NULL default '0'
+  `candidate_id` int unsigned NOT NULL default '0',
+  `keyword_id` int unsigned NOT NULL default '0'
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
+
 
 --
 -- Table structure for table `category_count`
@@ -105,7 +106,7 @@ DROP TABLE IF EXISTS `category_count`;
 CREATE TABLE `category_count` (
   `thetime` datetime default NULL,
   `count` int(10) unsigned default NULL,
-  `category_id` int(10) unsigned default NULL
+  `category_id` int unsigned default NULL
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
 --
@@ -114,9 +115,9 @@ CREATE TABLE `category_count` (
 
 DROP TABLE IF EXISTS `cc`;
 CREATE TABLE `cc` (
-  `id` int(10) unsigned NOT NULL auto_increment,
-  `candidate_id` mediumint(9) default NULL,
-  `user_id` mediumint(9) default NULL,
+  `id` int unsigned NOT NULL auto_increment,
+  `candidate_id` int unsigned default NULL,
+  `user_id` int unsigned default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -126,11 +127,11 @@ CREATE TABLE `cc` (
 
 DROP TABLE IF EXISTS `comment`;
 CREATE TABLE `comment` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `comment` text NOT NULL,
-  `candidate_id` mediumint(9) NOT NULL default '0',
+  `candidate_id` int unsigned NOT NULL default '0',
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
-  `user_id` mediumint(9) NOT NULL default '0',
+  `user_id` int unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -140,7 +141,7 @@ CREATE TABLE `comment` (
 
 DROP TABLE IF EXISTS `cron`;
 CREATE TABLE `cron` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `type` enum('EVERY','DOW','DOM') default NULL,
   `dow` int(11) default NULL,
   `dom` int(11) default NULL,
@@ -154,7 +155,7 @@ CREATE TABLE `cron` (
 
 DROP TABLE IF EXISTS `department`;
 CREATE TABLE `department` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `name` varchar(32) NOT NULL default '',
   `abbrev` varchar(8) NOT NULL default '',
   PRIMARY KEY  (`id`)
@@ -166,10 +167,10 @@ CREATE TABLE `department` (
 
 DROP TABLE IF EXISTS `department_admin`;
 CREATE TABLE `department_admin` (
-  `id` mediumint(9) NOT NULL auto_increment,
-  `department_id` mediumint(9) NOT NULL default '0',
+  `id` int unsigned NOT NULL auto_increment,
+  `department_id` int unsigned NOT NULL default '0',
   `sendmail` enum('Y','N') default 'Y',
-  `user_id` mediumint(9) NOT NULL default '0',
+  `user_id` int unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -179,9 +180,9 @@ CREATE TABLE `department_admin` (
 
 DROP TABLE IF EXISTS `document`;
 CREATE TABLE `document` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
-  `candidate_id` mediumint(9) NOT NULL default '0',
+  `candidate_id` int unsigned NOT NULL default '0',
   `contents` varchar(32) default NULL,
   `filename` varchar(80) NOT NULL default '',
   `data` mediumblob,
@@ -198,7 +199,7 @@ CREATE TABLE `document` (
 
 DROP TABLE IF EXISTS `frontlink`;
 CREATE TABLE `frontlink` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `description` varchar(100) NOT NULL default '',
   `url` varchar(100) NOT NULL default '',
   `side` enum('RIGHT','LEFT') default 'LEFT',
@@ -211,9 +212,9 @@ CREATE TABLE `frontlink` (
 
 DROP TABLE IF EXISTS `interview`;
 CREATE TABLE `interview` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
-  `candidate_id` mediumint(9) default NULL,
+  `candidate_id` int unsigned default NULL,
   `date` date default NULL,
   `purpose` varchar(80) default NULL,
   `status` enum('PENDING','COMPLETED','CANCELLED') default NULL,
@@ -227,9 +228,9 @@ CREATE TABLE `interview` (
 
 DROP TABLE IF EXISTS `interview_person`;
 CREATE TABLE `interview_person` (
-  `id` mediumint(9) NOT NULL auto_increment,
-  `interview_slot_id` mediumint(9) default NULL,
-  `user_id` mediumint(9) NOT NULL default '0',
+  `id` int unsigned NOT NULL auto_increment,
+  `interview_slot_id` int unsigned default NULL,
+  `user_id` int unsigned NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -239,13 +240,13 @@ CREATE TABLE `interview_person` (
 
 DROP TABLE IF EXISTS `interview_slot`;
 CREATE TABLE `interview_slot` (
-  `id` mediumint(9) NOT NULL auto_increment,
-  `interview_id` mediumint(9) default NULL,
-  `time` mediumint(9) default NULL,
-  `duration` mediumint(9) default NULL,
+  `id` int unsigned NOT NULL auto_increment,
+  `interview_id` int unsigned default NULL,
+  `time` int unsigned default NULL,
+  `duration` int unsigned default NULL,
   `location` varchar(40) default NULL,
   `topic` text,
-  `hide` mediumint(9) default NULL,
+  `hide` int unsigned default NULL,
   `type` enum('INTERVIEW','BREAK','BREAKFAST','LUNCH','DINNER','PHONE','OTHER') default 'INTERVIEW',
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
@@ -256,7 +257,7 @@ CREATE TABLE `interview_slot` (
 
 DROP TABLE IF EXISTS `keyword`;
 CREATE TABLE `keyword` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `keyword` varchar(32) NOT NULL default '',
   `description` varchar(100) default NULL,
   PRIMARY KEY  (`id`)
@@ -268,16 +269,16 @@ CREATE TABLE `keyword` (
 
 DROP TABLE IF EXISTS `opening`;
 CREATE TABLE `opening` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
   `number` varchar(10) NOT NULL default '',
   `description` varchar(80) NOT NULL default '',
   `status` enum('PENDING','OPEN','FILLED') NOT NULL default 'PENDING',
-  `department_id` mediumint(9) default NULL,
+  `department_id` int unsigned default NULL,
   `url` varchar(255) default NULL,
   `priority` varchar(6) default NULL,
   `duedate` date default NULL,
-  `owner_id` int(10) unsigned default NULL,
+  `owner_id` int unsigned default NULL,
   `short_key` varchar(32) default NULL,
   PRIMARY KEY  (`id`),
   KEY `owner_id` (`owner_id`)
@@ -289,7 +290,7 @@ CREATE TABLE `opening` (
 
 DROP TABLE IF EXISTS `param`;
 CREATE TABLE `param` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `name` varchar(64) NOT NULL default '',
   `value` varchar(64) NOT NULL default '',
   PRIMARY KEY  (`id`)
@@ -301,12 +302,12 @@ CREATE TABLE `param` (
 
 DROP TABLE IF EXISTS `rating`;
 CREATE TABLE `rating` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
   `rating` decimal(5,2) NOT NULL default '0.00',
   `comment` varchar(100) default NULL,
-  `candidate_id` int(10) unsigned default NULL,
-  `user_id` int(10) unsigned default NULL,
+  `candidate_id` int unsigned default NULL,
+  `user_id` int unsigned default NULL,
   PRIMARY KEY  (`id`)
 ) ENGINE=Innodb DEFAULT CHARSET=utf8;
 
@@ -316,7 +317,7 @@ CREATE TABLE `rating` (
 
 DROP TABLE IF EXISTS `recruiter`;
 CREATE TABLE `recruiter` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
   `name` varchar(64) NOT NULL default '',
   `agency` varchar(64) default NULL,
@@ -325,7 +326,7 @@ CREATE TABLE `recruiter` (
   `address2` varchar(64) default NULL,
   `city` varchar(32) default NULL,
   `state` varchar(16) default NULL,
-  `contract` int(10) unsigned default NULL,
+  `contract` int unsigned default NULL,
   `notes` varchar(250) default NULL,
   `active` enum('Y','N') NOT NULL default 'Y',
   `zipcode` varchar(16) default NULL,
@@ -341,9 +342,9 @@ CREATE TABLE `recruiter` (
 
 DROP TABLE IF EXISTS `suggestion`;
 CREATE TABLE `suggestion` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime NOT NULL default '0000-00-00 00:00:00',
-  `submitter_id` mediumint(9) NOT NULL default '0',
+  `submitter_id` int unsigned NOT NULL default '0',
   `content` text NOT NULL,
   `status` enum('OPEN','DEVELOPMENT','COMPLETED','REJECTED') NOT NULL default 'OPEN',
   `priority` enum('P1','P2','P3','P4') NOT NULL default 'P1',
@@ -356,7 +357,7 @@ CREATE TABLE `suggestion` (
 
 DROP TABLE IF EXISTS `temp_dir`;
 CREATE TABLE `temp_dir` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
   `name` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`)
@@ -368,7 +369,7 @@ CREATE TABLE `temp_dir` (
 
 DROP TABLE IF EXISTS `tempdir`;
 CREATE TABLE `tempdir` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `creation` datetime default NULL,
   `name` varchar(255) NOT NULL default '',
   PRIMARY KEY  (`id`)
@@ -380,7 +381,7 @@ CREATE TABLE `tempdir` (
 
 DROP TABLE IF EXISTS `template`;
 CREATE TABLE `template` (
-  `id` int(10) unsigned NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `table_name` varchar(32) default NULL,
   `column_name` varchar(32) default NULL,
   `template` text,
@@ -394,7 +395,7 @@ CREATE TABLE `template` (
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-  `id` mediumint(9) NOT NULL auto_increment,
+  `id` int unsigned NOT NULL auto_increment,
   `name` varchar(40) NOT NULL default '',
   `title` varchar(40) NOT NULL default '',
   `email` varchar(40) NOT NULL default '',
