@@ -15,6 +15,8 @@ use Utility;
 use User;
 use Password;
 
+use Data::Dumper;
+
 require "globals.pl";
 
 ##
@@ -53,9 +55,14 @@ sub doWebLogin
     if ( param("heading") ) {
         $heading = param("heading");
     }
+    my $message = undef;
+    if ( param("message" )) {
+	$message = param('message');
+    }
     print Layout::doLoginForm({
         -heading=>$heading,
         -link=>$link,
+	-message => $message,
     });
     print end_html;
 }
@@ -78,12 +85,45 @@ sub doWebLoginFinish
     ## Process a login request
     
     my $userid = param("login_id");
+    my $login_name = param("login_name");
     my $password = param("password");
     ConnectToDatabase();
-    my $rec = getRecordById({
-        -table=>\%::UserTable,
-        -id=>$userid,
-    });
+
+    my $rec;
+    my $recs;
+    my $message;
+
+    ## If login_name is given, use it
+
+    if ( $login_name ) {
+	if ( $login_name =~ /@/ ) {
+#	    $message = "Using email address $login_name";
+	    $recs = getRecordsMatch({
+		-table=>\%::UserTable,
+		-column => 'email',
+		-value => $login_name,
+				   });
+	} else {
+#	    $message = "Using user name $login_name";
+	    $recs = getRecordsMatch({
+		-table=>\%::UserTable,
+		-column => 'name',
+		-value => $login_name
+				   });
+	}
+#	$message .= Dumper($recs);
+	if ( $recs && scalar @$recs > 0 ) {
+	    $rec = $recs->[0];
+	    $userid = $rec->{'id'};
+	} else {
+	    $rec = undef;
+	}
+    } else {
+	$rec = getRecordById({
+	    -table=>\%::UserTable,
+	    -id=>$userid,
+			     });
+    }
 
     if ( defined $rec &&
          ( (!$password && !$rec->{'password'}) ||
@@ -93,6 +133,7 @@ sub doWebLoginFinish
     } else {
         param("password", "");
         param("heading", "Incorrect password, try again");
+	param('message', $message) if $message;
         doWebLogin();
     }
 }

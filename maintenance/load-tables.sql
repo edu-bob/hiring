@@ -23,7 +23,10 @@ INSERT INTO `param` (`id`, `name`, `value`) VALUES
   (4,'hostname','yourhost.yourdomain.com'),
   (2,'title','Your Company Candidate Tracker'),
   (3,'refresh','4'),
-  (5,'e-mail-from','tracker');
+  (5,'e-mail-from','tracker'),
+  (6, 'must-log-in','1'),
+  (7, 'can-create-account','0');
+
 /*!40000 ALTER TABLE `param` ENABLE KEYS */;
 
 --

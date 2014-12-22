@@ -42,6 +42,8 @@ sub doFirstPage
   BODY: {
       my $title = Param::getValueByName("title");
       my $image = Param::getValueByName("image");
+      my $mustLogIn = Param::getValueByName('must-log-in');
+      my $canCreateAccount = Param::getValueByName('can-create-account');
 
       if ( !defined $title ) {
 	  $title = "Candidate Tracker";
@@ -59,29 +61,30 @@ sub doFirstPage
       print start_td({-valign=>"top"});
       if ( isLoggedIn() && isAdmin() ) {
 	  print ul(
-		   li(a({-href=>"reports.cgi?op=mail"}, "Send e-mail reminders")),
-		   li(a({ -href => "maintenance.cgi" }, "DB Maintenance")), "\n",
-		   ul(
-		      li(a({ -href => "manage.cgi?table=opening" }, "Manage Job Openings")), "\n",
-		      li(a({ -href => "manage.cgi?table=user" }, "Manage Users")), "\n",
-		      li(a({ -href => "manage.cgi?table=recruiter" }, "Manage Recruiters")), "\n",
-
-		      ),
-		   );
+	      li(a({-href=>"reports.cgi?op=mail"}, "Send e-mail reminders")),
+	      li(a({ -href => "maintenance.cgi" }, "DB Maintenance")), "\n",
+	      ul(
+		  li(a({ -href => "manage.cgi?table=opening" }, "Manage Job Openings")), "\n",
+		  li(a({ -href => "manage.cgi?table=user" }, "Manage Users")), "\n",
+		  li(a({ -href => "manage.cgi?table=recruiter" }, "Manage Recruiters")), "\n",
+		  
+	      ),
+	      );
       } 
-      my $query = 'select count(*),status from candidate group by status';
-      SQLSend($query);
-      print p(b("Candidates:")), start_ul;
-      my $total = 0;
-      while( my($count,$status) = SQLFetchData() ) {
-	  print li(a({-href=>"query.cgi?op=query;status=$status"}, "$count in $status status"));
-	  $total += $count;
-      }
-      if ( $total == 0 ) {
-	  print li("None.");
-      }
-      print end_ul;
-      
+      if ( $mustLogIn && isLoggedIn() ) {
+	  my $query = 'select count(*),status from candidate group by status';
+	  SQLSend($query);
+	  print p(b("Candidates:")), start_ul;
+	  my $total = 0;
+	  while( my($count,$status) = SQLFetchData() ) {
+	      print li(a({-href=>"query.cgi?op=query;status=$status"}, "$count in $status status"));
+	      $total += $count;
+	  }
+	  if ( $total == 0 ) {
+	      print li("None.");
+	  }
+	  print end_ul;
+      } 
       if ( isLoggedIn()) {
           if ( isAdmin() ) {
               print ul(li(a({-href=>"user.cgi"}, font({-size=>"4"}, "Manage user accounts"))));
@@ -89,18 +92,19 @@ sub doFirstPage
               print ul(li(a({-href=>"user.cgi"}, font({-size=>"4"}, "Manage your login"))));
           }
       }
-
+      
       print end_td;
-
+      
       print end_Tr;
       
-
+      
       print start_Tr;
       print start_td;
       print start_ul;
-      print li(a({-href => "query.cgi" }, font({-size=>"4"},"Advanced Search"))), "\n",
-      li(a({-href=>"candidates.cgi?op=add"}, font({-size=>"4"}, "Add a candidate"))), "\n";
-      
+      if ( $mustLogIn && isLoggedIn() ) {
+	  print li(a({-href => "query.cgi" }, font({-size=>"4"},"Advanced Search"))), "\n",
+	  li(a({-href=>"candidates.cgi?op=add"}, font({-size=>"4"}, "Add a candidate"))), "\n";
+      }
       if ( isLoggedIn() ) {
 	  my $name = getLoginName();
 	  my $mylist = "query.cgi?op=query;status=NEW;status=ACTIVE;owner_id=" . getLoginId();
@@ -112,34 +116,41 @@ sub doFirstPage
 
       print end_ul;
 
-      # Search for a name
+      if ( $mustLogIn && isLoggedIn() ) {
 
-      print Layout::startForm({-action=>"query.cgi"}), "\n",
-      hidden({-name=>"op", -default=>"go"}), "\n",
-      "Search for a name: ", "\n",
-      textfield({-name=>"name", -size=>"18"}), "\n",
-      submit({-name=>"Search"}), "\n",
-      Layout::endForm;
+	  # Search for a name
+
+	  print Layout::startForm({-action=>"query.cgi"}), "\n",
+	  hidden({-name=>"op", -default=>"go"}), "\n",
+	  "Search for a name: ", "\n",
+	  textfield({-name=>"name", -size=>"18"}), "\n",
+	  submit({-name=>"Search"}), "\n",
+	  Layout::endForm;
+      }
 
       print end_td;
 
       print start_td({-valign=>"top"});
-      print ul(
-	       li(a({-href=>"reports.cgi?op=openings;hidesql=1"}, font({-size=>"4"}, "List all openings"))),
-	       li(a({-href=>"reports.cgi?op=weekly"},
-		    font({-size=>"4"}, "Weekly report"),
-                    " ", a({-href=>"reports.cgi?op=weekly&weeks=-1"}, "(last week)")),
-		  " ", a({-href=>"reports.cgi?op=weekly&weeks=-1&weeks=0"}, "(both)")),
-	       li(a({-href=>"reports.cgi?op=counts;hidesql=1"}, font({-size=>"4"}, "Counts per position"))),
-	       li(font({-size=>"4"}, "Calendar: ",
-                       a({-href=>"calendar.cgi?type=interview"},"interviews"), "\n", " or ",
-                       a({-href=>"calendar.cgi?type=user"}, "interviewers"), "\n", " or ",
-                       a({-href=>"calendar.cgi?type=candidate"}, "candidates"))),
-               li(font({-size=>"4"}, a({-href=>"manage.cgi?op=list;table=recruiter"}, "List recruiters"))),
-	       );
+      
+      if ( $mustLogIn && isLoggedIn() ) {
+	  print ul(
+	      li(a({-href=>"reports.cgi?op=openings;hidesql=1"}, font({-size=>"4"}, "List all openings"))),
+	      li(a({-href=>"reports.cgi?op=weekly"},
+		   font({-size=>"4"}, "Weekly report"),
+		   " ", a({-href=>"reports.cgi?op=weekly&weeks=-1"}, "(last week)")),
+		 " ", a({-href=>"reports.cgi?op=weekly&weeks=-1&weeks=0"}, "(both)")),
+	      li(a({-href=>"reports.cgi?op=counts;hidesql=1"}, font({-size=>"4"}, "Counts per position"))),
+	      li(font({-size=>"4"}, "Calendar: ",
+		      a({-href=>"calendar.cgi?type=interview"},"interviews"), "\n", " or ",
+		      a({-href=>"calendar.cgi?type=user"}, "interviewers"), "\n", " or ",
+		      a({-href=>"calendar.cgi?type=candidate"}, "candidates"))),
+	      li(font({-size=>"4"}, a({-href=>"manage.cgi?op=list;table=recruiter"}, "List recruiters"))),
+	      );
+      }
+
       # Create a new account
 
-      if ( !isLoggedIn() ) {
+      if ( $canCreateAccount && !isLoggedIn() ) {
 	  print ul(li("New? ",
 		      a({href=>"create-account.cgi"}, "Create yourself an account")));
       }

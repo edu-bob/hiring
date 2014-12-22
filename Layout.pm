@@ -35,6 +35,7 @@ $VERSION = 1.00;
 
 
 use CGI qw(:standard *table *ol *ul *Tr *td escape *p *div *script);
+use Param;
 use Login;
 use Database;
 use Argcvt;
@@ -2592,6 +2593,77 @@ sub doMustLogin
 
 sub doLoginForm
 {
+    my $menuFormat = Param::getValueByName("menu-login-form");
+    if ( $menuFormat ) {
+        return doMenuFormatLoginForm(@_);
+    } else {
+        return doSimpleFormatLoginForm(@_);
+    }
+}
+
+##
+## Simple log in form - username (or email) and password
+##
+
+sub doSimpleFormatLoginForm
+{
+    my $argv = shift;
+    argcvt($argv, ['link'], ['heading', 'message']);
+
+    my $heading = $$argv{'heading'} ? $$argv{'heading'} : "Please Log In";
+    my $link = $$argv{'link'};
+
+    my $result = "";
+
+    $result .= doHeading({
+        -title=>$heading,
+    });
+
+    my $message = $$argv{'message'};
+    if ( $message ) {
+        print p($message);
+    }
+
+    $result .= Layout::startForm({
+        -action => "loginout.cgi",
+        -name => "loginform",
+    }). "\n";
+    param("op", "loginfinish");
+    $result .= hidden({-name => "op", -default => "loginfinish"}) . "\n";
+    $result .= hidden({-name => "link", -default => "$link"}) . "\n";
+
+    $result .= start_table({-border=>"0"}) . "\n";
+
+    $result .= Tr(
+        td({-align=>"right"}, "Login: ",br,"(name or email address)"),
+        td(textfield({-name => "login_name",},
+           ))) . "\n";
+    $result .= Tr(
+             td({-align=>"right", -id=>"passleft"}, "Password: "),
+             td(password_field({-name=>"password", -id=>"passright"})),
+             ) . "\n";
+
+    $result .= Tr(
+        td('&nbsp;'),
+        td(a({-href=>"."},'Forgot password?')),
+    );
+
+    $result .= Tr(
+             td("&nbsp;"),
+             td(submit({-name => "submit", -value => "login" })),
+             ) . "\n";
+    $result .= end_table . "\n";
+
+    $result .= Layout::endForm . "\n";
+
+    $result .= end_table;
+    return $result;
+}
+
+
+sub doMenuFormatLoginForm
+{
+
     my $argv = shift;
     argcvt($argv, ['link'], ['heading']);
 
@@ -2657,7 +2729,7 @@ END
     $result .= hidden({-name => "op", -default => "loginfinish"}) . "\n";
     $result .= hidden({-name => "link", -default => "$link"}) . "\n";
 
-    $result .= start_table . "\n";
+    $result .= start_table({-border=>"0"}) . "\n";
     $result .= Tr(
              td({-align=>"right"}, "Login: "),
              td(PulldownMenu({
@@ -2671,6 +2743,12 @@ END
              td({-align=>"right", -id=>"passleft"}, "Password: "),
              td(password_field({-name=>"password", -id=>"passright"})),
              ) . "\n";
+
+    $result .= Tr(
+        td('&nbsp;'),
+        td(a({-href=>"."},'Forgot password?')),
+    );
+
     $result .= Tr(
              td("&nbsp;"),
              td(submit({-name => "submit", -value => "login" })),
