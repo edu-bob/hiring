@@ -2594,10 +2594,12 @@ sub doMustLogin
 sub doLoginForm
 {
     my $menuFormat = Param::getValueByName("menu-login-form");
-    if ( $menuFormat ) {
-        return doMenuFormatLoginForm(@_);
+    my $args = @_[0];
+#    $args->{'message'} = Dumper($menuFormat);
+    if ( $menuFormat && $menuFormat->{'value'} ) { 
+        return doMenuFormatLoginForm($args);
     } else {
-        return doSimpleFormatLoginForm(@_);
+        return doSimpleFormatLoginForm($args);
     }
 }
 
@@ -2665,7 +2667,7 @@ sub doMenuFormatLoginForm
 {
 
     my $argv = shift;
-    argcvt($argv, ['link'], ['heading']);
+    argcvt($argv, ['link'], ['heading','message']);
 
     my $heading = $$argv{'heading'} ? $$argv{'heading'} : "Please Log In";
     my $link = $$argv{'link'};

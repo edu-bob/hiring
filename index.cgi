@@ -40,18 +40,34 @@ sub doFirstPage
     ConnectToDatabase() || Utility::preHTMLAbort("Cannot connect to Database");
     
   BODY: {
+ 
       my $title = Param::getValueByName("title");
-      my $image = Param::getValueByName("image");
-      my $mustLogIn = Param::getValueByName('must-log-in');
-      my $canCreateAccount = Param::getValueByName('can-create-account');
-
-      if ( !defined $title ) {
+      if ( $title ) {
+	  if ( ref $title ) {
+	      $title = $title->{'value'};
+	  }
+      } else {
 	  $title = "Candidate Tracker";
       }
-      if ( !defined $image ) {
+      print doHeading({-title=>$title} ), "\n";
+
+#      Utility::ObjDump(Param::getValueByName('title'));
+      my $mustLogIn = Param::getValueByName('must-log-in');
+      if ( $mustLogIn && ref $mustLogIn ) {
+	  $mustLogIn = $mustLogIn->{'value'};
+      }
+
+      my $canCreateAccount = Param::getValueByName('can-create-account');
+      if ( $canCreateAccount && ref $canCreateAccount ) {
+	  $canCreateAccount = $canCreateAccount->{'value'};
+      }
+      
+      my $image = Param::getValueByName("image");
+      if ( $image && ref $image ) {
+	  $image = $image->{'value'}
+      } else {
 	  $image = "images/help.gif";
       }
-      print doHeading({-title=>$title} ), "\n";
 
       Application::checkParams();
 
