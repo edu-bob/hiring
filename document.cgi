@@ -20,6 +20,16 @@ use Document;
 
 Application::Init();
 
+# In must-log-in mode, make sure we're logged in
+
+my $mustLogIn = Param::getValueByName('must-log-in');
+if ( $mustLogIn && ref $mustLogIn ) {
+    $mustLogIn = $mustLogIn->{'value'};
+}
+if ( $mustLogIn && !isLoggedIn() ) {
+    doMustLogin(self_url());;
+}
+
 if ( param("op") ) {
     my $op = param("op");
   SWITCH: {

@@ -15,6 +15,7 @@ use Layout;
 use Database;
 use Utility;
 use Schedule;
+use Login;
 
 require "globals.pl";
 use InterviewTable;
@@ -23,6 +24,17 @@ use OpeningTable;
 use DepartmentTable;
 
 Application::Init();
+
+
+# In must-log-in mode, make sure we're logged in
+
+my $mustLogIn = Param::getValueByName('must-log-in');
+if ( $mustLogIn && ref $mustLogIn ) {
+    $mustLogIn = $mustLogIn->{'value'};
+}
+if ( $mustLogIn && !isLoggedIn() ) {
+    doMustLogin(self_url());;
+}
 
 ##
 ## This hash defines what is different from type to type of calendar

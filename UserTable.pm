@@ -82,6 +82,27 @@ use User;
 				type => "enum",
 				help => "Y or N: can this person see candidate salary info?",
 			    },
+		    {
+			column => 'changestatus',
+			heading => 'Can change status?',
+			secure => 'admin',
+			type => 'enum',
+			help => 'Y or N: User can change a candidate\'s status',
+		    },
+		    {
+			column => 'validated',
+			heading => 'Account validated?',
+			secure => 'admin',
+			type => 'enum',
+			help => 'Y or N: This user account has been validated',
+		    },
+		    {
+			column => 'passwordkey',
+			heading => 'Change password token',
+			secure => 'admin',
+			type => 'text',
+			help => 'MD5 key for enabling the change of the user password',
+		    },
 			    ]
 		);
 1;

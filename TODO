@@ -1,0 +1,3 @@
+Change candidate edit form so that one needs the "change status"
+permission to change the candidate's status field.
+

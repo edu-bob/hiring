@@ -54,6 +54,17 @@ use RatingTable;
 
 Application::Init();
 
+# In must-log-in mode, make sure we're logged in
+
+my $mustLogIn = Param::getValueByName('must-log-in');
+if ( $mustLogIn && ref $mustLogIn ) {
+    $mustLogIn = $mustLogIn->{'value'};
+}
+if ( $mustLogIn && !isLoggedIn() ) {
+    doMustLogin(self_url());;
+}
+
+
 if ( defined param("op") ) {
     my $op = param("op");
   SWITCH: {
@@ -1075,6 +1086,7 @@ sub doGet
 {
     print header;
     ConnectToDatabase();
+    my $user = Login::getLoginRec();
 
     ## This script is called when the "Reject this candidate" link is used.
     ## It prompts for a comment and then swaps out to a URL that processes
@@ -1158,7 +1170,9 @@ END
     my $rejecturl = url() . "?op=reject&id=$id";
     print start_td({-valign=>"top"});
 #    print a({-href=>$rejecturl}, "Reject candidate");
-    print a({-href=>"javascript:doreject('$rejecturl');"}, "Reject candidate");
+    if ( $user->{'changestatus'} eq 'Y' || isAdmin() ) {
+        print a({-href=>"javascript:doreject('$rejecturl');"}, "Reject candidate");
+    }
     print end_td;
     print end_Tr, "\n";
 
@@ -1363,12 +1377,20 @@ Candidate::getInterviewers($id);
 	##    addtocc ......... checked to add owner to CC list
 	##
 
-	print h2("Set the Status, Next Action and Owner"), "\n";
+	if ( $user->{'changestatus'} eq 'Y' || isAdmin() ) {
+	    print h2("Set the Status, Next Action and Owner"), "\n";
+	} else {
+	    print h2("Set the Next Action and Owner"), "\n";
+	}
 	print hidden({-name=>"id_new", -default=>"$id"});
 	print start_table, "\n";
-	print Tr(
-		 td({-align=>"right"},b("New Status:")), "\n",
-		 td(
+
+	# Only show the status field if this user can change it.
+
+	if ( $user->{'changestatus'} eq 'Y' || isAdmin()) {
+	    print Tr(
+		td({-align=>"right"},b("New Status:")), "\n",
+		td(
 		    Layout::doSingleFormElement({  ## XXX
 			-table=>\%::CandidateTable,
 			-column=>"status",
@@ -1376,8 +1398,10 @@ Candidate::getInterviewers($id);
 			-form=>undef,
 			-div=>undef,
 			-suffix => "_new",
-			})), "\n",
-		 );
+						})), "\n",
+		);
+	}
+
 	print Tr(
 		 td({-align=>"right"},b("Next Action:")), "\n",
 		 td(
