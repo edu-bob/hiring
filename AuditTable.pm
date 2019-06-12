@@ -71,13 +71,13 @@ use UserTable;
                              },
                              {
                                  column => "join_table",
-                                 heading => "Table to joind values with",
+                                 heading => "Table to Join Values With",
                                  type => "text",
 								 nullable => 1,
                              },
                              {
                                  column => "join_id",
-                                 heading => "PK in join_table",
+                                 heading => "PK in Join Table",
                                  type => "text",
 								 nullable => 1,
                              },

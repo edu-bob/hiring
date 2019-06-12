@@ -67,7 +67,7 @@ use RecruiterTable;
                                  },
 				 {
 				     column => "recruiter_ref",
-				     heading => "Recruiter reference #",
+				     heading => "Recruiter Reference #",
                                      type => "text",
                                      width => 16,
                                      group => "referrer",
@@ -82,7 +82,7 @@ use RecruiterTable;
 				     },
 				 {
 				     column => "resumeurl",
-				     heading => "Online resume URL",
+				     heading => "Online Resume URL",
 				     type => "url",
 				     width => 32,
 				     help => "A full URL to an external page containing the resume."

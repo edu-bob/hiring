@@ -12,17 +12,17 @@
                              },
                              {
                                  column => "name",
-                                 heading => "Template name",
+                                 heading => "Template Name",
                                  type => "text",
                              },
                              {
                                  column => "table_name",
-                                 heading => "Table that this template applies to",
+                                 heading => "Table That This Template Applies To",
                                  type => "text",
                              },
                              {
                                  column => "column_name",
-                                 heading => "Column that this template applies to",
+                                 heading => "Column That This Template Applies To",
                                  type => "text",
                              },
 			     {

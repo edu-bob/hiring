@@ -37,17 +37,17 @@
                                 },
                                 {
                                     column => "data",
-                                    heading => "Uploaded document",
+                                    heading => "Uploaded Document",
                                     type => "blob",
                                 },
                                 {
                                     column => "size",
-                                    heading => "Size of uploaded data",
+                                    heading => "Size of Uploaded Data",
                                     type => "text",
                                 },
                                 {
                                     column => "temporary",
-                                    heading => "File is temporary",
+                                    heading => "File is Temporary",
                                     type => "text",
                                 },
                                 ]

@@ -52,7 +52,7 @@ use InterviewSlotTable;
 				 },
 				 {
 				     column => "note_interviewer",
-				     heading => "Note to interviewers",
+				     heading => "Note to Interviewers",
 				     type => "bigtext",
 #				     rows=>12,
 #				     columns=>80,

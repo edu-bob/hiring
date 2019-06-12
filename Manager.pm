@@ -299,7 +299,7 @@ sub doDisplay
     my $id = param("id");
 
     my $record = getRecordById({-table=>$table, -id=>$id});
-    print doHeading({-title=>"View from $table->{'heading'}: " . ( $table->{'label'} ? $$record{$$table{'label'}} : "#$id")});
+    print doHeading({-title=>"$table->{'heading'}: " . ( $table->{'label'} ? $$record{$$table{'label'}} : "#$id")});
 
     print doStaticValues({-table=>$table,-record=>$record});
 

@@ -4,7 +4,7 @@
 
 %::ActionCategoryTable = (
                           table => "action_category",
-                          heading => "ActionCategory",
+                          heading => "Action Category",
                           order => "precedence",
                           columns => [
                                       {
@@ -24,7 +24,7 @@
                                       },
                                       {
                                           column => "precedence",
-                                          heading => "Sort order",
+                                          heading => "Sort Order",
                                           type => "text",
                                       },
                                       ]

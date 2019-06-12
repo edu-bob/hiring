@@ -2435,7 +2435,7 @@ sub doStaticValues
           };
           $tcol->{'type'} eq "url" and do {
               if ( $values->{$tcol->{'column'}} ) {
-                  $result .= a({-href=>"$values->{$tcol->{'column'}}"}, $values->{$tcol->{'column'}}) . "\n";
+                  $result .= a({-href=>"$values->{$tcol->{'column'}}", -target=>"_blank"}, $values->{$tcol->{'column'}}) . "\n";
               }
               last SW;
           };
