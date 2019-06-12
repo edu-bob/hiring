@@ -136,8 +136,9 @@ sub doCheck
     print header;
     ConnectToDatabase();
     print doHeading({-title=>"Compare metadata to DB"});
-    
+
     my @dbtables = GetTableNames();
+#    print Utility::ObjDump(\@dbtables);
     my %db;
     foreach my $t ( @dbtables ) {
         SQLSend("SHOW COLUMNS FROM $t");

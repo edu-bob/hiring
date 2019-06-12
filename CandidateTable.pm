@@ -81,6 +81,13 @@ use RecruiterTable;
 				     help => "A full URL to an external system from which this candidate came."
 				     },
 				 {
+				     column => "resumeurl",
+				     heading => "Online resume URL",
+				     type => "url",
+				     width => 32,
+				     help => "A full URL to an external page containing the resume."
+				     },
+				 {
 				     column => "portfolio",
 				     heading => "Portfolio Link",
 				     type => "url",

@@ -12,7 +12,7 @@ require "globals.pl";
 
 use CGI qw(:standard *ul *pre *p);
 use CGI::Carp qw(fatalsToBrowser);
-       
+
 # Use the DBI module
 use DBI;
 
@@ -84,74 +84,80 @@ sub do_sql
     my $file = shift;
 
   BODY: {
-      
+
       if ( ! $file ) {
-		  print p(b("Error: No SQL file specified"));
-		  last BODY;
+	  print p(b("Error: No SQL file specified"));
+	  last BODY;
       }
-      
+
 ##
 ## Try connecting to the database
 ##
-      
-	  if ( !ConnectToDatabase() ) {
-		  print p("Connect to database failed");
-		  print p($DBI::errstr);
-		  last BODY;
+
+      if ( !ConnectToDatabase() ) {
+	  print p("Connect to database failed");
+	  print p($DBI::errstr);
+	  last BODY;
       }
-      
-      
+
 ##
 ## Read and execute the commands in the schema creation script
 ##
-      
+
       open SQL, "$file" or do {
-		  print p(b(i("ERROR: $file: $!")));
-		  last BODY;
+	  print p(b(i("ERROR: $file: $!")));
+	  last BODY;
       };
-      
+
       my $line;
       my $sql = "";
       my $out;
-	  my $in_comment = 0;
+      my $in_comment = 0;
       while ( defined ($line = <SQL>) ) {
 #    chomp $line;
-		  if ( $line =~ /^$/ ) {
-			  if ( $in_comment ) {
-				  print end_p;
-				  $in_comment = 0;
-			  }
-			  if ( length $sql > 0 ) {
-				  print pre("$sql");
-				  SQLSend($sql);
-				  my $rows = SQLAffectedRows();
-				  print p("$rows rows affected");
-				  $sql = "";
-			  }
-		  } elsif ( $line =~ /^\#/ ) {
-			  if ( !$in_comment ) {
-				  $in_comment = 1;
-				  print start_p;
-			  }
-			  print b("$line"), br();
-		  } else {
-			  $sql = $sql . " " . $line;
-		  }
+	  if ( $line =~ /^$/ ) {
+	      if ( $in_comment ) {
+		  print end_p;
+		  $in_comment = 0;
+	      }
+	      if ( length $sql > 0 ) {
+		  print pre("$sql");
+		  SQLSend($sql);
+		  my $rows = SQLAffectedRows();
+		  print p("$rows rows affected");
+		  $sql = "";
+	      }
+	  } elsif ( $line =~ /^\#/ ) {
+	      if ( !$in_comment ) {
+		  $in_comment = 1;
+		  print start_p;
+	      }
+	      print b("$line"), br();
+	  } else {
+	      $sql = $sql . " " . $line;
+	  }
       }
-	  close SQL;
-      
+      close SQL;
+      if ( length $sql > 0 ) {
+	  print pre("$sql");
+	  SQLSend($sql);
+	  my $rows = SQLAffectedRows();
+	  print p("$rows rows affected");
+	  $sql = "";
+      }
+
       my @tables = GetTableNames();
       print h2("Tables"), start_ul;
       if ( scalar @tables == 0 ) {
-		  print li("No tables in this database");
+	  print li("No tables in this database");
       } else {
-		  foreach ( @tables ) {
-			  print li("$_"), "\n";
-		  }
+	  foreach ( @tables ) {
+	      print li("$_"), "\n";
+	  }
       }
       print end_ul;
-      
+
   }; #BODY
-    
+
 }
 

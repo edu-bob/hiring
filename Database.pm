@@ -222,7 +222,8 @@ sub GetTableNames()
 {
     my @tables = $dbh->tables();
     for ( my $i=0 ; $i<scalar(@tables) ; $i++ ) {
-        $tables[$i] =~ s/[^\w]//g;
+        $tables[$i] =~ s/[^\w.]//g;
+        $tables[$i] =~ s/\w*\.//;
     }
         
     return @tables;
