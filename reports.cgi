@@ -374,12 +374,12 @@ sub doCounts
     my %depts = getRecordMap({-table=>\%::DepartmentTable});
     foreach my $d ( sort {$depts{$a}{'name'} cmp $depts{$b}{'name'}} keys %depts ) {
 	my @positions = getRecordsMatch({-table=>\%::OpeningTable,
-					 -column=>"department_id",
-					 -value=>$depts{$d}{'id'}});
+					 -column=>["department_id", "status"],
+					 -value=>[$depts{$d}{'id'}, 'OPEN']});
 	if ( scalar(@positions) == 0 ) {
 	    next;
 	}
-	print h2("$depts{$d}{'name'}"), "\n";
+	print h2({-class=>"reports"},"$depts{$d}{'name'}"), "\n";
 	print start_table({-width=>"100%", -cellpadding=>4, -cellspacing=>0, -border=>1}), "\n";
 
 	my $countcolumns = scalar @categories + 3;
@@ -392,7 +392,7 @@ sub doCounts
 
         ## Table heading row 1
 
-	print start_Tr, "\n";
+	print start_Tr({-class=>"reports"}), "\n";
 	print td({-rowspan=>"2", -width=>"$namecolumn_size%"}, b("Position")), "\n";
 	print td({-rowspan=>"2", -width=>"$duedatecolumn_size%"}, b("Due Date")), "\n";
         print td({-colspan=>scalar @categories, -align=>"center", -width=>"$spanned_countcolumn_size%"}, b("New or Active")), "\n";
@@ -405,7 +405,7 @@ sub doCounts
 
         ## Table heading row 2
 
-        print start_Tr, "\n";
+        print start_Tr({-class=>"reports"}), "\n";
 	foreach my $cat ( @categories ) {
 	    print td({-align=>"center", -width=>"$countcolumn_size%"}, b($cat->{'name'})), "\n";
 	}
@@ -531,7 +531,7 @@ sub doCounts
 	print end_Tr, "\n";
 	
 	print end_table, "\n";
-        print p(b($department_total," for department $depts{$d}{'name'}."));
+        print p(b($department_total," for department \"$depts{$d}{'name'}\""));
         $grand_total += $department_total;
     }
 

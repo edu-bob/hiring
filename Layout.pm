@@ -42,6 +42,7 @@ use Argcvt;
 use Utility;
 use DateTime;
 use LeftRightWidget;
+use OptionMenuWidget;
 
 use Data::Dumper;
 
@@ -1179,6 +1180,9 @@ sub doEditTable
         if ( $tcol->{'private'} ) {
             next;
         }
+        if ( exists $tcol->{'binary'} && $tcol->{'binary'} ) {
+            next;
+        }
         $columns = "$columns$sep$tcol->{'column'}";
         $sep = ",";
         if ( exists $tcol->{'type'} && $tcol->{'type'} eq "pk" ) {
@@ -1232,6 +1236,10 @@ sub doEditTable
                 $result .= td($value) . "\n";
             } else {
               SW: {
+                  exists $tcol->{'binary'} && $tcol->{'binary'} and do {
+                      $result .= td("(binary data)") . "\n";
+                      last SW;
+                  };
                   $tcol->{'type'} eq "url" and do {
                       $result .= td($value ? a({-href=>"$value"},"link") : "&nbsp;") . "\n";
                       last SW;
@@ -2355,17 +2363,18 @@ sub formValidate
 sub doStaticValues
 {
     my $argv = $_[0];
-    my ($table, $values, $skipempty, $hide);
+    my ($table, $values, $skipempty, $hide, $class);
     my %hidden;
     if ( ref($argv) eq "HASH"  ) {
         argcvt($argv,
                ['table', 'record'],
-               ['skipempty', 'hide'],
+               ['skipempty', 'hide', 'class'],
                );
         $table = $$argv{'table'};
         $values = $$argv{'record'};
         $skipempty = $$argv{'skipempty'};
         $hide = $$argv{'hide'};
+        $class = $$argv{'class'};
         foreach my $h ( @$hide ) {
             $hidden{$h} = 1;
         }
@@ -2375,7 +2384,7 @@ sub doStaticValues
     }
 
 #    print Utility::ObjDump($values);
-    my $result = start_table();
+    my $result = start_table($class ? {-class=>$class} : {});
     
     foreach my $tcol ( @{$table->{'columns'}} ) {
         if ( exists $tcol->{'type'} && $tcol->{'type'} eq "pk" ) {
@@ -2830,7 +2839,7 @@ sub doHeading
     $result .= start_html(\%args);
     
     if ( !exists $$argv{'noheading'} ) {
-        $result .= table({-width=>"100%"},
+        $result .= table({-width=>"100%", -class=>"heading"},
                          Tr(
                             td(h1($$argv{'title'}), "\n"), "\n",
                             td({-align=>"right"}, a({-href=>Utility::rootURL()}, "Home"), br, "\n",

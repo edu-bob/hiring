@@ -251,7 +251,7 @@ sub doAdd
                    ),
                 Tr(
                    td({-align=>"right"},"Description:"),
-                   td(textfield({-name=>"contents0", -size=>"30", -onchange=>$onchange})),
+                   td(textfield({-name=>"contents0", -size=>"30", -default=>"resume", -onchange=>$onchange})),
                    ),
                 ), "\n";
     print end_td, "\n";
@@ -1131,7 +1131,8 @@ END
 
     Recruiter::mailSubject("Concerning $$candidate{'name'}");
     print doStaticValues({-table=>\%::CandidateTable,
-			  -record=>$candidate});
+			  -record=>$candidate,
+			 -class=>"striped"});
 
     print start_table({
 	-border=>"0",

@@ -203,11 +203,11 @@ sub widget
 
     if (exists $$argv{'size'} and $$argv{'size'} ) {
         $args{'-size'} = $$argv{'size'};
-        if ( $args{'-size'} > scalar(@valuesLeft) ) {
-            $args{'-size'} = scalar(@valuesLeft);
+        if ( $args{'-size'} > scalar(@valuesLeft)+scalar(@valuesRight) ) {
+            $args{'-size'} = scalar(@valuesLeft)+scalar(@valuesRight);
         }
     } else {
-        $args{'-size'} = scalar(@valuesLeft) > 5 ? 5 : scalar @valuesLeft;
+        $args{'-size'} = scalar(@valuesLeft)+scalar(@valuesRight) > 5 ? 5 : scalar @valuesLeft+scalar(@valuesRight);
     }
     exists $$argv{'multiple'} and $args{'-multiple'} = "true";
 #    exists $$argv{'onchange'} and $args{'-onchange'} = $$argv{'onchange'};

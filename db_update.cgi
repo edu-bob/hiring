@@ -56,7 +56,7 @@ if ( $success ) {
     if ( $op == 1 ) {
 		do_confirm();
     } else {
-		do_sql($file);
+		do_sql($file, $version+1);
     }
 }
 
@@ -81,7 +81,7 @@ sub do_confirm
 ##################################################################
 sub do_sql
 {
-    my $file = shift;
+    my ($file,$newversion) = (@_);
 
   BODY: {
 
@@ -146,6 +146,7 @@ sub do_sql
 	  $sql = "";
       }
 
+      SetDBVersion($newversion);
       my @tables = GetTableNames();
       print h2("Tables"), start_ul;
       if ( scalar @tables == 0 ) {

@@ -100,6 +100,7 @@ use OpeningCcTable;
 	    hashkey => "cc",
 	    help => "Select users to be CC'd on changes",
 	    widget => "Left/Right",
+	    size => 5,
 	},
 	{
 	    type => "N-N",

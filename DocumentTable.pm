@@ -39,6 +39,7 @@
                                     column => "data",
                                     heading => "Uploaded Document",
                                     type => "blob",
+				    binary => 1,
                                 },
                                 {
                                     column => "size",

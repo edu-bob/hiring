@@ -73,7 +73,7 @@ sub doFirstPage
 
       print start_table({ -border=>"0", -cellpadding=>"8", -cellspacing=>"0"}), "\n";
       print start_Tr;
-      print td(img({-src=>$image}));
+      print td({-class=>"homeimage"}, img({-src=>$image}));
       print start_td({-valign=>"top"});
       if ( isLoggedIn() && isAdmin() ) {
 	  print ul(

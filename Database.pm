@@ -15,6 +15,7 @@ $VERSION = 1.00;
 
 @EXPORT = qw(&ConnectToDatabase 
              &GetDBVersion 
+             &SetDBVersion
              &ColumnsList 
              &SQLQuote 
              &SQLSend 
@@ -83,7 +84,11 @@ sub ConnectToDatabase
     return 1;
 }
 
-
+sub SetDBVersion
+{
+    my ($version) = (@_);
+    SQLSend("UPDATE param SET value=" . SQLQuote($version) . " WHERE name='version'");
+}
 
 sub GetDBVersion
 {
