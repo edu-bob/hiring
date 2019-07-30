@@ -260,7 +260,7 @@ sub doQuery
 	    }
 	} else {
 	    $sfa = 1;
-	    $sort = "action_id";
+	    $sort = "action_id.precedence-n";
 	}
     } else {
 	$sfa = 0;
@@ -390,15 +390,16 @@ sub doQuery
 	if ( $sfa ) {
 	    my $thisaction = (!defined $r->{'action_id'} || !$r->{'action_id'} ? 0 : $r->{'action_id'} );
 	    if ( $lastaction ne $thisaction ) {
-		print end_table;
+		print end_table, br;
 		print table({-border=>"0", -cellspacing=>"6", -cellpadding=>"4", -width=>"100%"},
 			    Tr(
-			       td({-bgcolor=>"#ffffcc", -valign=>"bottom"},
+			       td({-bgcolor=>"#ffffff", -valign=>"bottom"},
 				  font({-size=>"4"},
 				       ("Next Action: ", $r->{'action_id.action'} ? $r->{'action_id.action'} : "none specified"),
 				       ))));
 		$lastaction = $thisaction;
 		$doheading = 1;
+		$row = 0;
 	    }
 	} else {
 	    if ( $lastaction eq "impossible" ) {

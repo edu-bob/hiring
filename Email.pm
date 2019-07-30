@@ -54,6 +54,7 @@ require "globals.pl";
 ##   commenter .... ref to a user record of the person who made the comment
 ##   note ......... A message to replace the standard "Changes have been made to ..." line
 ##   showskips .... true then print a message about skipped columns
+##   message ...... an extra optional message to put into the top of the email
 ##
 ## Configuration parameters:
 ##   e-mail-from .. the e-mail address of the entity that the e-mail comes from if
@@ -64,7 +65,7 @@ require "globals.pl";
 sub sendEmail
 {
     my $argv = shift;
-    argcvt($argv, ["candidate", "owner"], ["changes", "comment", "commenter", "note", 'showskips']);
+    argcvt($argv, ["candidate", "owner"], ["changes", "comment", "commenter", "note", 'showskips', 'message']);
     my $candidate = $$argv{'candidate'};
     my $owner = $$argv{'owner'};
 
@@ -96,12 +97,9 @@ sub sendEmail
     my $m = new CGI;
     $message .= $m->header;
 
-    if ( exists $$argv{'note'} ) {
-	$message .= p($$argv{'note'}) . "\n";
-    } else {
-	$message .= p("Changes have been made to this candidate: ", "\n",
-		     Candidate::candidateLink({-name=>$$candidate{'name'},
-					       -id=>$$candidate{'id'}})) . "\n";
+    if ( exists $$argv{'message'} && $$argv{'message'} ) {
+        $message .= p(b("To all recipients concerning ", Candidate::candidateLink({-id=>$$candidate{'id'}}), ": "),$$argv{'message'});
+        $empty = 0;
     }
 
     ##
@@ -109,7 +107,14 @@ sub sendEmail
     ## the e-mail message here.
     ##
 
-    if ( exists $$argv{'changes'} && $$argv{'changes'}  ) {
+    if ( exists $$argv{'changes'} && $$argv{'changes'} && $$argv{'changes'}->size() > 0 ) {
+        if ( exists $$argv{'note'} ) {
+            $message .= p($$argv{'note'}) . "\n";
+        } else {
+            $message .= p("Changes have been made to this candidate: ", "\n",
+                         Candidate::candidateLink({-name=>$$candidate{'name'},
+                                                   -id=>$$candidate{'id'}})) . "\n";
+        }
         my $tbl = $$argv{'changes'}->listHTML({-user=>$owner, -showskips=>$$argv{'showskips'}});
         if ( $tbl ) {
             $message .= $tbl;

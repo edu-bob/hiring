@@ -283,6 +283,8 @@ sub doAdd
 		       -onchange=>$onchange}))
 		   ),
 		);
+    print hr, "\n";
+    print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
 
     print submit({-name=>"Add"});
     print Layout::endForm;
@@ -480,6 +482,11 @@ sub doAddFinish
 	  }
 
 	  ##
+	  ## If there is an optional email message paragraph, add it
+	  ##
+	  my $message = param("msg");
+
+	  ##
 	  ## Report on any chnages that were made.
 	  ##
 
@@ -519,7 +526,8 @@ sub doAddFinish
 					    -comment=>$comment,
 					    -commenter=>getLoginName(),
 					    -note=>$note,,
-					    -showskips => 1,
+					    -showskips => 1,  ## This does NOT override 'seesalary'
+					    -message => $msg,
 			     });
 		      if ( !$sent ) {
 			  print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
@@ -744,6 +752,9 @@ Use this to add a comment at the same time as editing the candidate's record")),
 	  print p("None."), "\n";
       }
 
+      print hr, "\n";
+      print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+      print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
       print submit({-name=>"Update"});
       print Layout::endForm;
   };
@@ -780,7 +791,13 @@ sub doEditFinish
 
     my $newcandidate = {};
     my $comment;
+
+    ## Get the optional message to put on the emails
+
+    my $msg = param("msg");
+    my $skipemail = param("skipemail");
   BODY: {
+
       $changes = new Changes(Converter::getConverterRef());
       doUpdateFromParams({
           -table=>\%::CandidateTable,
@@ -923,39 +940,46 @@ sub doEditFinish
 	  }
       }
   };
-    if ( $changes->size() > 0 ) {
-	print p("Saved changes.");
-	auditUpdate($changes);
-	print $changes->listHTML({-user=>Login::getLoginRec()});
+    if ( $changes->size() > 0 || $msg ) {
+	if ( $changes->size() > 0 ) {
+	    print p("Saved changes.");
+	    auditUpdate($changes);
+	    print $changes->listHTML({-user=>Login::getLoginRec()});
+	}
 
-	my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
-	if ( scalar(@mailrecips) > 0 ) {
-	    foreach my $user ( @mailrecips ) {
-		if ( $user->{'sendmail'} eq 'Y' ) {
-		    my $note;
-		    if ( $$candidate{'owner_id'} eq $user->{'id'} ) {
-			$note = "Changes have been made to a candidate owned by you: " .
-			    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
-		    } else {
-			$note = "Changes have been made to a candidate that has you as a CC: " .
-			    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
-		    }
-		    print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
-		    my $sent = sendEmail({-changes=>$changes,
-					  -candidate=>$candidate,
-					  -owner=>$user,
-					  -note=>$note,
-					  -comment=>$comment,
-					  -commenter=>getLoginName(),
-					  -showskips => 1,
-					 });
-		    if ( !$sent ) {
-			print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
+	if ( !(defined $skipemail && $skipemail) ) {
+	    my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
+	    if ( scalar(@mailrecips) > 0 ) {
+		foreach my $user ( @mailrecips ) {
+		    if ( $user->{'sendmail'} eq 'Y' ) {
+			my $note = "";
+			if ( $changes->size() > 0 ) {
+			    if ( $$candidate{'owner_id'} eq $user->{'id'} ) {
+				$note = "Changes have been made to a candidate owned by you: " .
+				    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
+			    } else {
+				$note = "Changes have been made to a candidate that has you as a CC: " .
+				    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
+			    }
+			}
+			print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
+			my $sent = sendEmail({-changes=>$changes,
+					      -candidate=>$candidate,
+					      -owner=>$user,
+					      -note=>$note,
+					      -comment=>$comment,
+					      -commenter=>getLoginName(),
+					      -showskips => 1,
+					      -message => $msg,
+					     });
+			if ( !$sent ) {
+			    print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
+			}
 		    }
 		}
+	    } else {
+		print p("No owner or CC for this candidate, no one to e-mail the changes to!");
 	    }
-	} else {
-	    print p("No owner or CC for this candidate, no one to e-mail the changes to!");
 	}
 
 	# Now check to see if the owner changed
@@ -1306,7 +1330,7 @@ Candidate::getInterviewers($id);
     }
 
     ##
-    ## Add comments, rtings, upload documents
+    ## Add comments, ratings, upload documents
     ##
 
     if ( isLoggedIn() ) {
@@ -1452,6 +1476,9 @@ Candidate::getInterviewers($id);
 		 td(textfield({-name=>"contents", -size=>"30"})), "\n",
 		 );
 	print end_table, "\n", br, "\n";
+
+        print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+	print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
 
 	## submit
 
@@ -1898,9 +1925,13 @@ sub doAddStuffFinish
       }
   };
 
+    my $msg = param("msg");
+    my $haveMessage = 0;
+    if ( defined $msg && $msg !~ /^\s*$/ ) {
+        $haveMessage = 1;
+    }
 
-
-    if ( $haveRating || $haveComment || $haveUpload || $haveChanges) {
+    if ( $haveRating || $haveComment || $haveUpload || $haveChanges || $haveMessage) {
 	auditUpdate($changes);
 	updateModtime($candidate_id);
 	print $changes->listHTML({-user=>Login::getLoginRec()});
@@ -1913,21 +1944,29 @@ sub doAddStuffFinish
 	Candidate::invalidateCache($candidate_id);
 	$candidate = Candidate::getRecord($candidate_id);
 
-	my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
-	if ( scalar(@mailrecips) > 0 ) {
-	    foreach my $user ( @mailrecips ) {
-		if ( $user->{'sendmail'} eq 'Y' ) {
-		    sendEmail({-changes=>$changes,
-			       -candidate=>$candidate,
-			       -owner=>$user,
-			       -comment=>$comment,
-			       -commenter=>$user_name}
-			      );
-		    print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
+	## Check "do not email" checkbox
+	my $skipemail = param("skipemail");
+
+	if ( !(defined $skipemail && $skipemail) ) {
+	    my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
+	    if ( scalar(@mailrecips) > 0 ) {
+		foreach my $user ( @mailrecips ) {
+		    if ( $user->{'sendmail'} eq 'Y' ) {
+			sendEmail({-changes=>$changes,
+				   -candidate=>$candidate,
+				   -owner=>$user,
+				   -comment=>$comment,
+				   -commenter=>$user_name,
+				   -message=>$msg,
+				  });
+			print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
+		    }
 		}
+	    } else {
+		print p("No one has requested e-mail updates for this candidate!");
 	    }
 	} else {
-	    print p("No one has requested e-mail updates for this candidate!");
+	    print p("Skip email checked, sending no emails");
 	}
     } else {
 	print p("Nothing added or changed, nothing saved.");

@@ -2522,8 +2522,8 @@ sub doStaticValues
 
             my $sep = "";
             foreach my $nnrec ( @nnrecs ) {
-                $result .= $sep . $nnrec->{$field} . "\n";
-                $sep = "," . br;
+                $result .= $sep . $nnrec->{$field};
+                $sep = br, "\n";
             }
         }
 
