@@ -261,6 +261,7 @@ sub doScheduleForm
 
     print end_table, "\n";
 
+    print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
     print br(), submit({-name=>"Save Schedule"}), br, br;
 
     print start_table({-cellpadding=>"4", -cellspacing=>"0", -border=>"1"}), "\n";
@@ -623,51 +624,57 @@ sub doSave
 	}
 
 	## Generate an email
-	my $candidate = Candidate::getRecord($candidate_id);
-	my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
-	my $interviewers = Schedule::getInterviewers($new_schedule_id);
-	my %dedupe;
-	foreach my $u ( @mailrecips ) {
-	    $dedupe{$u->{'id'}} = 1;
-	}
-	foreach my $k ( keys %$interviewers ) {
-	    if ( !exists $dedupe{$k} ) {
-		push @mailrecips, User::getRecord($k);
-		$dedupe{$k} = 1;
+
+	my $skipemail = param("skipemail");
+	if ( !(defined $skipemail && $skipemail) ) {
+
+	    my $candidate = Candidate::getRecord($candidate_id);
+	    my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
+	    my $interviewers = Schedule::getInterviewers($new_schedule_id);
+	    my %dedupe;
+	    foreach my $u ( @mailrecips ) {
+		$dedupe{$u->{'id'}} = 1;
 	    }
-	}
-	if ( scalar(@mailrecips) > 0 ) {
-	    foreach my $user ( @mailrecips ) {
-		if ( $user->{'sendmail'} eq 'Y' ) {
-		    my $note;
-		    if ( $$candidate{'owner_id'} eq $user->{'id'} ) {
-			$note = "Schedule changes have been made to a candidate owned by you: " .
-			    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
-		    } else {
-			$note = "Schedule changes have been made to a candidate that has you as a CC or an interviewer: " .
-			    candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
-		    }
-		    $note .= p("See schedule number " . Schedule::link($new_schedule_id));
-		    $note .= Schedule::formatSchedule({
-			-showhidden=>1,
-			-showopening=>0,
-			-fullreport=>1,
-			-showinterviewernote=>1,
-		    }, Schedule::getRecord($new_schedule_id));
-		    sendEmail({
-# leave this out:	-changes=>$changes,
-			-candidate=>$candidate,
-			-owner=>$user,
-			-note=>$note,
-			-commenter=>getLoginName(),
-		    });
-		    print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
+	    foreach my $k ( keys %$interviewers ) {
+		if ( !exists $dedupe{$k} ) {
+		    push @mailrecips, User::getRecord($k);
+		    $dedupe{$k} = 1;
 		}
 	    }
+	    if ( scalar(@mailrecips) > 0 ) {
+		foreach my $user ( @mailrecips ) {
+		    if ( $user->{'sendmail'} eq 'Y' ) {
+			my $note;
+			if ( $$candidate{'owner_id'} eq $user->{'id'} ) {
+			    $note = "Schedule changes have been made to a candidate owned by you: " .
+				candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
+			} else {
+			    $note = "Schedule changes have been made to a candidate that has you as a CC or an interviewer: " .
+				candidateLink({-name=>$$candidate{'name'}, -id=>$$candidate{'id'}});
+			}
+			$note .= p("See schedule number " . Schedule::link($new_schedule_id));
+			$note .= Schedule::formatSchedule({
+			    -showhidden=>1,
+			    -showopening=>0,
+			    -fullreport=>1,
+			    -showinterviewernote=>1,
+			}, Schedule::getRecord($new_schedule_id));
+			sendEmail({
+    # leave this out:	-changes=>$changes,
+			    -candidate=>$candidate,
+			    -owner=>$user,
+			    -note=>$note,
+			    -commenter=>getLoginName(),
+			});
+			print p("Changes e-mailed to $user->{'name'} at $user->{'email'}");
+		    }
+		}
+	    } else {
+		print p("No owner or CC for this candidate, no one to e-mail the changes to!");
+	    }
 	} else {
-	    print p("No owner or CC for this candidate, no one to e-mail the changes to!");
+	    print p("Skip email checked, sending no emails");
 	}
-
 
     } else {
 	print p("Empty schedule - not saving.");

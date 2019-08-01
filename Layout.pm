@@ -467,7 +467,7 @@ sub Footer
     if ( !($argv && $$argv{'hidelogin'}) ) {
         $str .= td({-align=>"center", -class=>"footer"}, "|") . "\n";
         $str .= td({-align=>"center", -class=>"footer"},
-                   Login::isLoggedIn() ? (a({-href=>"loginout.cgi?op=logout&link=$return"}, "Log out:"),
+                   Login::isLoggedIn() ? (a({-href=>"loginout.cgi?op=logout&link=" . escape(url({-base=>1}))}, "Log out:"),
                                    " ", Login::getLoginName()) :
                    a({-href=>"loginout.cgi?link=$return"}, "Log in")) . "\n";
     }
@@ -2656,7 +2656,7 @@ sub doSimpleFormatLoginForm
 
     $result .= Tr(
         td('&nbsp;'),
-        td(a({-href=>"."},'Forgot password?')),
+        td(a({-href=>"user.cgi?op=forgot"},'Forgot password?')),
     );
 
     $result .= Tr(
@@ -2671,6 +2671,47 @@ sub doSimpleFormatLoginForm
     return $result;
 }
 
+sub doForgotPasswordForm
+{
+    my $argv = shift;
+    argcvt($argv, [], ['heading', 'message']);
+
+    my $heading = $$argv{'heading'} ? $$argv{'heading'} : "Forgot password";
+
+    my $result = "";
+    $result .= doHeading({
+        -title=>$heading,
+                         });
+    my $message = $$argv{'message'};
+    if ( $message ) {
+        print p($message);
+    }
+
+    $result .= Layout::startForm({
+        -action => "user.cgi",
+        -name => "userform",
+    }). "\n";
+    param("op", "sendpwemail");
+    $result .= hidden({-name => "op", -default => "sendpwemail"}) . "\n";
+
+    $result .= start_table({-border=>"0"}) . "\n";
+
+    $result .= Tr(
+        td({-align=>"right"}, "Login name: ",br,"(name or email address)"),
+        td(textfield({-name => "login_name",},
+           ))) . "\n";
+    $result .= Tr(
+             td("&nbsp;"),
+             td(submit({-name => "submit", -value => "Send Password Email" })),
+             ) . "\n";
+    $result .= end_table . "\n";
+
+    $result .= Layout::endForm . "\n";
+
+    $result .= end_table;
+    return $result;
+
+}
 
 sub doMenuFormatLoginForm
 {

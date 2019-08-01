@@ -177,7 +177,7 @@ sub doFirstPage
       SQLSend("SELECT COUNT(*) from frontlink");
       my $links = SQLFetchOneColumn();
       if ( $links > 0 ) {
-	  print h2("Related Links"), "\n";
+	  print h1("Quick Links"), "\n";
 	  my $tbl = \%::FrontlinkTable; #to suppress spurious warning
 	  my @links = getAllRecords({-table=>\%::FrontlinkTable});
 	  

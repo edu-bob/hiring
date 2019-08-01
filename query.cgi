@@ -111,7 +111,7 @@ my @Recruiter = (
 		     heading => "Name",
 		     url => 'name',
 		     field => 'name',
-		     link => \&Candidate::candidateURL,
+#		     link => \&Candidate::candidateURL,
                     warpable => 1,      # means that this url can be warped to if only one result is returned
 		 },
 		 {
@@ -155,9 +155,18 @@ my @Recruiter = (
 		 );
 
 my %Format = (
-	      "standard" => \@Standard,
-	      "recruiter" => \@Recruiter,
-              "long" => \@Standard,
+	      "standard" => {
+                  columns => \@Standard,
+                  nolinks => 0,
+              },
+	      "recruiter" => {
+                  columns => \@Recruiter,
+                  nolinks => 1,
+              },
+              "long" => {
+                  columns => \@Standard,
+                  nolinks => 0,
+              },
 	      );
 
 Application::Init();
@@ -207,9 +216,10 @@ sub doFirstPage
     print Query::standardForm("queryform");
     print table({-cellpadding=>3},
 		Tr(
-		   td({-valign=>"top"}, checkbox({-name=>"sfa", -value=>1, -label=>"Group by Next Action"})),
-		   td("&nbsp;&nbsp;&nbsp;&nbsp;"),
-		   td({-valign=>"top"}, checkbox({-name=>"nolinks", -value=>1, -label=>"Omit candidate links"})),
+		   td({-valign=>"top"}, 
+		      checkbox({-name=>"sfa", -value=>1, -label=>"Group by Next Action"}),
+		      br,
+		      checkbox({-name=>"nolinks", -value=>1, -label=>"Omit all links (default for recruiter mode)"})),
 		   td("&nbsp;&nbsp;&nbsp;&nbsp;"),
 		   td({-valign=>"top", -align=>"right"}, "Format: ",),
 		   td({-valign=>"top"}, radio_group({-name=>"format",
@@ -270,7 +280,7 @@ sub doQuery
 
     my %sorturl;
 
-    my $nolinks = (defined param("nolinks") && param("nolinks"));
+    my $nolinks = (defined param("nolinks") && param("nolinks")) || $Format{$format}->{'nolinks'};
     my $cookie = cookie({-name=>"query",
 			 -value=>self_url()});
 
@@ -342,7 +352,7 @@ sub doQuery
     ##
 
     foreach $r ( @results ) {
-	foreach my $c ( @{$Format{$format}} ) {
+	foreach my $c ( @{$Format{$format}->{'columns'}} ) {
 	    if ( exists $$c{'value'} ) {
               SW1: {
                 # check for an external call
@@ -410,7 +420,7 @@ sub doQuery
 	if ( $doheading ) {
 	    print start_table({-width=>"100%", -cellspacing=>"0", -cellpadding=>"2"});
 	    print start_Tr;
-	    foreach my $c ( @{$Format{$format}} ) {
+	    foreach my $c ( @{$Format{$format}->{'columns'}} ) {
 		my $str = b($c->{'heading'});
 		if ( !$nolinks ) {
 		    if ( exists $$c{'url'} ) {
@@ -434,7 +444,7 @@ sub doQuery
 	    $color = "#ddffdd";
 	}
 	$row++;
-	foreach my $c ( @{$Format{$format}} ) {
+	foreach my $c ( @{$Format{$format}->{'columns'}} ) {
 	    my %colargs = ( -bgcolor=>$color );
 	    if ( exists $$c{'align'} ) {
 		$colargs{-align} = $$c{'align'};
@@ -550,7 +560,7 @@ sub doQuery
     }
     print p(scalar(@results) . " result" . (scalar(@results)!=1?"s":"") .
             (!isAdmin() ? " (others may be hidden)" : "") . ".");
-    print Footer({-url=>"$self_url"});
+    print Footer({-url=>"self_self_url"});
     print end_html, "\n";
 }
 

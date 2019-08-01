@@ -14,8 +14,7 @@ require Exporter;
 $VERSION = 1.00;
 @ISA = qw(Exporter);
 
-@EXPORT = qw(
-			 );
+@EXPORT = qw();
 
 @EXPORT_OK = qw();              # Symbols to export on request
 
@@ -124,6 +123,22 @@ sub getRecordByName
         -column=>"name",
         -value=>$name,
     });
+    if ( scalar @records == 0 ) {
+        return undef;
+    } else {
+        return $records[0];
+    }
+}
+
+sub getRecordBy
+{
+    my $argv = shift;
+    argcvt($argv, ["column","value"]);
+    my @records = Database::getRecordsMatch({
+        -table => User::getTable(),
+        -column => $argv->{'column'},
+        -value => $argv->{'value'},
+                                            });
     if ( scalar @records == 0 ) {
         return undef;
     } else {

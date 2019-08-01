@@ -27,6 +27,7 @@
 
 use strict;
 use CGI::Carp qw(fatalsToBrowser);
+use Digest::MD5 qw(md5 md5_hex md5_base64);
 
 use CGI qw(:standard *table *ol *ul *Tr *td *li *img *p -nosticky);
 
@@ -42,6 +43,7 @@ use Changes;
 use Audit;
 use Utility;
 use Argcvt;
+use Email;
 
 Application::Init();
 
@@ -54,6 +56,22 @@ if ( param("op") ) {
       };
       $op eq "go" and do {
           doGo();
+          last SWITCH;
+      };
+      $op eq "forgot" and do {
+          doForgot();
+          last SWITCH;
+      };
+      $op eq 'sendpwemail' and do {
+          doPasswordEmail();
+          last SWITCH;
+      };
+      $op eq 'resetpw' and do {
+          doPasswordReset();
+          last SWITCH;
+      };
+      $op eq "passwordresetfinish" and do {
+          doPasswordResetFinish();
           last SWITCH;
       };
   };
@@ -293,4 +311,258 @@ sub doGo
 
   };
     print Footer, end_html, "\n";
+}
+
+
+##
+## Forgot password page
+##
+
+sub doForgot
+{
+    ConnectToDatabase();
+    print header;
+    my $heading = "Forgot Password";
+    print Layout::doForgotPasswordForm({
+                                       -heading=>$heading,
+                                       });
+    print end_htnl;
+}
+
+##
+## send password email
+##
+
+sub doPasswordEmail
+{
+    ConnectToDatabase();
+    print header;
+
+    my $login_name = param("login_name");
+    print doHeading({-title=>"Sending password reset email"});
+    my ($rec, $user_id);
+  BODY: {
+      if ( $login_name ) {
+          my $recs;
+          if ( $login_name =~ /@/ ) {
+              $recs = getRecordsMatch({
+                  -table=>\%::UserTable,
+                  -column => 'email',
+                  -value => $login_name,
+                                      });
+          } else {
+              $recs = getRecordsMatch({
+                  -table=>\%::UserTable,
+                  -column => 'name',
+                  -value => $login_name
+                                      });
+          }
+          if ( $recs && scalar @$recs > 0 ) {
+              $rec = $recs->[0];
+              $user_id = $rec->{'id'};
+          } else {
+              $rec = undef;
+          }
+      } else { 
+          print Utility::redError("Something went wrong - no user name present");
+          last BODY;
+      }
+      if ( !$rec ) {
+          print Utility::errorMessage("Sorry, \"$login_name\" is not a known user"), "\n";
+          last BODY;
+      }
+
+      my $changes = new Changes;
+
+      ## Generate a reset password token, and log the audit record for it
+
+      my $token = Digest::MD5::md5_hex(rand);
+
+      my $new_rec;
+      $new_rec->{'passwordkey'} = $token;
+      $changes->add({-table=>"user",
+                     -row=>"$user_id",
+                     -column=>"passwordkey",
+                     -type=>"CHANGE",
+                     -old=>$rec->{'passwordkey'},
+                     -new=>$new_rec->{'passwordkey'},
+                     -user=>getLoginId(),
+                 });
+
+      Database::updateSimpleRecord({
+          -table=>\%::UserTable,
+          -old=>$rec,
+          -new=>$new_rec,
+      });
+      auditUpdate($changes);
+
+      ## Generate the password reset URL and email it to that user
+
+      my $url = Layout::fullURL("user.cgi?op=resetpw;token=$token");
+
+      my $body = "";
+      my $boundary = "**__**__**__**__**__";
+
+      $body .= "This is a multipart message in MIME format.\n\n";
+      $body .= "--$boundary\n";
+      
+      my $m = new CGI;
+      $body .= $m->header;
+
+      my $me = Param::getValueByName("title") || "Candidate Tracker";
+
+      $body .= p("The $me received a request to send you a password reset link.");
+      $body .= p("If you didn't request it, delete this message.  Otherwise, click on the link below."), "\n";
+      $body .= p("This link can be used exactly once.");
+      $body .= p(a({-href=>$url}, "Reset password for $rec->{'name'}")), br, "\n";
+      $body .= "\n--$boundary--\n";
+
+#      print p("BODY"), $body;
+
+      print p("Go check email for $rec->{'email'} and click on the link in the message.");
+      print p("Please note that the link in the email will expire as soon as you have used it once.");
+
+      my $from = Param::getValueByName("e-mail-from");
+      if ( !defined $from ) {
+          $from = $::EMAIL_FROM;
+      }
+      
+      Email::sendHtmlEmail({
+          -from => $from,
+          -to => $rec->{'email'},
+          -subject => "Password reset for $me",
+          -boundary => $boundary,
+          -body => $body,
+                           });
+
+    };
+
+    print end_html;
+    
+}
+
+##
+## Process a reset password request
+##
+
+sub doPasswordReset()
+{
+    ConnectToDatabase();
+    print header;
+
+    my $token = param("token");
+
+    my $rec = User::getRecordBy({
+        -column => "passwordkey",
+        -value => $token,
+                                });
+
+  BODY: {
+      if ( !$rec ) {
+          print Utility::errorMessage("There is no user holding this password reset token.");
+          last BODY;
+      };
+      
+      my $heading = "Reset password for $rec->{'name'}";
+
+      my $result = "";
+      $result .= doHeading({
+          -title => $heading,
+                           });
+
+      $result .= Layout::startForm({
+          -action => "user.cgi",
+          -name => "passwordform",
+                                   }), "\n";
+      param("op", "passwordresetfinish");
+      $result .= hidden({-name => "op", -default => "passwordresetfinish"}), "\n";
+      $result .= hidden({-name => "token", -default => $token}), "\n";
+
+      $result .= start_table({-border=>"0"}) . "\n";
+      
+      $result .= Tr(
+          td({-align=>"right", -id=>"passleft"}, "New password: "),
+          td(password_field({-name=>"password", -id=>"passright"})),
+          ) . "\n";
+      
+      $result .= Tr(
+          td("&nbsp;"),
+          td(submit({-name => "submit", -value => "Set" })),
+          ) . "\n";
+      
+
+      $result .= end_table . "\n";
+      
+      $result .= Layout::endForm . "\n";
+      
+      $result .= end_table;
+
+      print $result;
+    };
+    print end_html;
+}
+
+sub doPasswordResetFinish()
+{
+    ConnectToDatabase();
+    print header;
+
+    my $changes = new Changes;
+
+    my $token = param("token");
+
+    my $rec = User::getRecordBy({
+        -column => "passwordkey",
+        -value => $token,
+                                });
+
+  BODY: {
+      if ( !$rec ) {
+          print Utility::errorMessage("There is no user holding this password reset token.");
+          last BODY;
+      };
+      print doHeading({
+          -title => "Password Reset for $rec->{'name'}",
+                      });
+
+      my $user_id = $rec->{'id'};
+
+      my $new_rec;
+      $new_rec->{'passwordkey'} = undef;
+      $changes->add({-table=>"user",
+                     -row=>$user_id,
+                     -column=>"passwordkey",
+                     -type=>"CHANGE",
+                     -old=>$rec->{'passwordkey'},
+                     -new=>$new_rec->{'passwordkey'},
+                     -user=>getLoginId(),
+                    });
+
+
+      my $pw = param("password");
+      $new_rec->{'password'} = User::cryptPassword($pw);
+      $changes->add({-table=>"user",
+                     -row=>$user_id,
+                     -column=>"password",
+                     -type=>"CHANGE",
+                     -old=>$rec->{'password'},
+                     -new=>$new_rec->{'password'},
+                     -user=>getLoginId(),
+                    });
+
+
+      Database::updateSimpleRecord({
+          -table=>\%::UserTable,
+          -old=>$rec,
+          -new=>$new_rec,
+      });
+
+      auditUpdate($changes);
+#      print $changes->listHTML();
+
+#      print dumpQueries();
+
+      print p("Completed.  Please log in using the new password."), "\n";
+    };
+    print Footer({-url=>url( -base => 1)}), end_html, "\n";
 }

@@ -20,6 +20,7 @@ require Exporter;
 
 @EXPORT = qw(
              &sendEmail
+             &sendHtmlEmail
              );
 
 @EXPORT_OK = qw();

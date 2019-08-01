@@ -930,12 +930,17 @@ sub updateSimpleRecord($)
             $sep = ",";
         } else {
             if ( exists $$old{$tcol->{'column'}} && defined $$old{$tcol->{'column'}} ) {
-                if ( exists $$new{$tcol->{'column'}} && defined $$new{$tcol->{'column'}} ) {
+#                if ( exists $$new{$tcol->{'column'}} && defined $$new{$tcol->{'column'}} ) {
+                if ( exists $$new{$tcol->{'column'}} ) {
                     if ( $$old{$tcol->{'column'}} ne $$new{$tcol->{'column'}} ) {
                         ##
                         ## Both the old and new values exist, and they are different.
                         ## Add the new value to the DB UPDATE statement
-                        $updates .= "$sep$tcol->{'column'} = " . SQLQuote($$new{$tcol->{'column'}});
+                        if ( defined $$new{$tcol->{'column'}} ) {
+                            $updates .= "$sep$tcol->{'column'} = " . SQLQuote($$new{$tcol->{'column'}});
+                        } else {
+                            $updates .= "$sep$tcol->{'column'} = NULL";
+                        }
                         $sep = ",";
                         $mods++;
                     }  else {
