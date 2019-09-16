@@ -1,16 +1,13 @@
 Candidate Tracker
 -----------------
 
-Copyright (c) 2006, Robert L. Brown.  Use of this application is
-restricted to those individuals and corporations that have been given
-explicit right-to-use by Robert L. Brown.  No redistribution rights
-are granted.  This software is delivered "as is" - no warranty exists
-and it can only be used if the license holder agrees to indemnify
-Robert L. Brown against any claims of damage or loss of productivity.
+Copyright (c) 2006-2019, Robert L. Brown.  
+
+License: Apache License 2.0
+
+This software is delivered "as is"
 
 rlb@openeye.com
-
-That said, this is a sweet application.
 
 The Candidate Tracker is a Perl CGI application and requires a web
 server to handle requests. Like any modern web-based application, it
