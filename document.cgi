@@ -79,10 +79,17 @@ sub doFirstPage
 
 
 
-    my $header = header({
-        -type=>"application/x-download",
-        -attachment=>$$document{'filename'},
-    });
+    my $header;
+    if ( $$document{'filename'} =~ /.*\.pdf/ ) {
+	$header = header({
+	    -type=>"application/pdf",
+			 });
+    } else {
+	$header = header({
+	    -type=>"application/x-download",
+	    -attachment=>$$document{'filename'},
+			 });
+    }
 
     print $header, $$document{'data'};
     return;

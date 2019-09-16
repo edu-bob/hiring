@@ -285,6 +285,7 @@ sub doAdd
 		);
     print hr, "\n";
     print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+    print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
 
     print submit({-name=>"Add"});
     print Layout::endForm;
@@ -315,6 +316,7 @@ sub doAddFinish
 
 
   BODY: {
+      my $skipemail = param("skipemail");
       my $name = param("name");
       if ( $name =~ /^\s*$/ ) {
 	  print p(b("Not adding an empty name - skipping"));
@@ -487,7 +489,7 @@ sub doAddFinish
 	  my $message = param("msg");
 
 	  ##
-	  ## Report on any chnages that were made.
+	  ## Report on any changes that were made.
 	  ##
 
 	  if ( $changes->size() > 0 ) {
@@ -507,34 +509,38 @@ sub doAddFinish
 
 	      my $candidate = Candidate::getRecord($candidate_id);
 	      my @mailrecips = Candidate::mailRecipients({-candidate=>$candidate});
-	      if ( scalar(@mailrecips) > 0 ) {
-		  foreach my $user ( @mailrecips ) {
-		      my $note;
-		      if ( $candidate->{'owner_id'} eq $user->{'id'} ) {
-			  $note = "This candidate, " .
-			      candidateLink({-name=>$candidate->{'name'}, -id=>$candidate->{'id'}}) .
-			      " has been added and assigned to you.";
-		      } else {
-			  $note = "This candidate, " .
-			      candidateLink({-name=>$candidate->{'name'}, -id=>$candidate->{'id'}}) .
-			      ", has been added and you are on the CC list.";
+	      if ( !(defined $skipemail && $skipemail) ) {
+		  if ( scalar(@mailrecips) > 0 ) {
+		      foreach my $user ( @mailrecips ) {
+			  my $note;
+			  if ( $candidate->{'owner_id'} eq $user->{'id'} ) {
+			      $note = "This candidate, " .
+				  candidateLink({-name=>$candidate->{'name'}, -id=>$candidate->{'id'}}) .
+				  ", has been added and assigned to you.";
+			  } else {
+			      $note = "This candidate, " .
+				  candidateLink({-name=>$candidate->{'name'}, -id=>$candidate->{'id'}}) .
+				  ", has been added and you are on the CC list.";
+			  }
+			  print p("Sending to $$user{'name'} via $$user{'email'}");
+			  my $sent = sendEmail({-changes=>$changes,
+						-candidate=>$candidate,
+						-owner=>$user,
+						-comment=>$comment,
+						-commenter=>getLoginName(),
+						-note=>$note,,
+						-showskips => 1,  ## This does NOT override 'seesalary'
+						-message => $msg,
+				 });
+			  if ( !$sent ) {
+			      print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
+			  }
 		      }
-		      print p("Sending to $$user{'name'} via $$user{'email'}");
-		      my $sent = sendEmail({-changes=>$changes,
-					    -candidate=>$candidate,
-					    -owner=>$user,
-					    -comment=>$comment,
-					    -commenter=>getLoginName(),
-					    -note=>$note,,
-					    -showskips => 1,  ## This does NOT override 'seesalary'
-					    -message => $msg,
-			     });
-		      if ( !$sent ) {
-			  print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
-		      }
+		  } else {
+		      print p("No owner, no CCs, for this candidate, no one to e-mail the changes to!");
 		  }
 	      } else {
-		  print p("No owner, no CCs, for this candidate, no one to e-mail the changes to!");
+		  print p("Skip email selected; not sending any email about this change.");
 	      }
 	  }
 
@@ -980,6 +986,8 @@ sub doEditFinish
 	    } else {
 		print p("No owner or CC for this candidate, no one to e-mail the changes to!");
 	    }
+	} else {
+	    print p("Skip email selected; not sending any email about this change.");
 	}
 
 	# Now check to see if the owner changed
