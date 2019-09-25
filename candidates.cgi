@@ -284,7 +284,7 @@ sub doAdd
 		   ),
 		);
     print hr, "\n";
-    print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+    print "Optional top paragraph for the outgoing email about changes (plain text): ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
     print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
 
     print submit({-name=>"Add"});
@@ -759,7 +759,7 @@ Use this to add a comment at the same time as editing the candidate's record")),
       }
 
       print hr, "\n";
-      print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+      print "Optional top paragraph for the outgoing email about changes (plain text): ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
       print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
       print submit({-name=>"Update"});
       print Layout::endForm;
@@ -1349,6 +1349,7 @@ Candidate::getInterviewers($id);
 			   -bgcolor=>"#e0e0e0"}),
 	start_Tr, start_td;
 	print Layout::startForm({-action=>url(), -enctype=>'multipart/form-data'});
+	print h1("Make changes");
 
 	print h2(a({-name=>"comment"}, "Add a Comment")), "\n";
 	my $links = OpeningEvaluation::getInsertLinks(Layout::getForm(),$candidate->{'opening_id'}, 'comment_0');
@@ -1485,7 +1486,7 @@ Candidate::getInterviewers($id);
 		 );
 	print end_table, "\n", br, "\n";
 
-        print "Optional top paragraph for the outgoing email about changes: ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
+        print "Optional top paragraph for the outgoing email about changes (plain text): ", br, textarea({-name=>"msg", -columns=>80, -rows=>3}), br, br, "\n";
 	print checkbox({-name=>"skipemail", -label=>"Do not send email"}),br, br, "\n";
 
 	## submit
