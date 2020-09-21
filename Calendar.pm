@@ -10,7 +10,7 @@ use CGI qw(:standard *table *Tr *td);
 
 =head1 NAME
 
-calendar - create a HTML calendat
+calendar - create a HTML calendar
 
 =head1 SYNOPSIS
 

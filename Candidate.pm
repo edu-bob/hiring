@@ -72,7 +72,7 @@ sub convert
 sub candidateLink
 {
     my $argv = shift;
-    argcvt($argv, ["id"], ["name"]);
+    argcvt($argv, ["id"], ["name","target"]);
 
     my $text;
     if ( $$argv{'name'} ) {
@@ -85,7 +85,13 @@ sub candidateLink
         $text = $$candidate{'name'};
     }
     my $url = candidateURL($$argv{'id'});
-    return a({-href=>"$url"}, $text);
+    my $attr = {-href=>"$url"};
+    if ( $$argv{'target'} ) {
+        $attr->{'target'} = $$argv{'target'};
+        return a($attr, $text, " ", img({-src=>"images/open-in-new-window.png"}));
+    } else {
+        return a($attr, $text);
+    }
 }
 
 sub candidateURL

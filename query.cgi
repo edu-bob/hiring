@@ -493,8 +493,12 @@ sub doQuery
     if ( $format eq "long" ) {
 	foreach $r ( @results ) {
 	    print hr, "\n";
-	    print h2($r->{'name'}), "\n";
 	    my $candidate = Candidate::getRecord($r->{'id'});
+	    ## TODO: Make this heading a link to the detail page
+	    print h2(Candidate::candidateLink({
+		-id=>$r->{'id'},
+		-target=>"_blank"
+					     }));
 	    print doStaticValues({
 		-record => $candidate,
 		-table => \%::CandidateTable,
