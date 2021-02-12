@@ -11,6 +11,7 @@ SCHEMA_FILE=maintenance/create-schema.sql
 CONTENT_FILE=maintenance/load-tables.sql
 BACKUP_FILE=mysqldump-20210208.sql
 ROOT_PW=Oakmead1270
+DATA_LOADED=scripts/DATA_IS_LOADED
 
 if test ! -f $SCHEMA_FILE
 then
@@ -59,6 +60,7 @@ EOF
     exit 0;
 fi
 
+
 DATABASE=`scripts/db-params -n`
 HOST=`scripts/db-params -h`
 USER=`scripts/db-params -u`
@@ -70,11 +72,9 @@ PASSWORD=`scripts/db-params -p`
 ##
 AUTH_USER=root
 
-echo "You will be prompted for the database password for $AUTH_USER"
-
-if test -f $BACKUP_FILE
+if test -n "$3" -a -f "$3"
 then
-    RESTORE_FILE=$BACKUP_FILE
+    RESTORE_FILE=$3
 else
     RESTORE_FILE=$CONTENT_FILE
 fi
@@ -89,3 +89,4 @@ mysql --user=${AUTH_USER} --password="$ROOT_PW" <<EOF
   source $RESTORE_FILE;
 EOF
 
+touch ${DATA_LOADED}
