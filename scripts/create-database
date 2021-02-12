@@ -9,15 +9,17 @@ fi
 
 SCHEMA_FILE=maintenance/create-schema.sql
 CONTENT_FILE=maintenance/load-tables.sql
+BACKUP_FILE=mysqldump-20210208.sql
+ROOT_PW=Oakmead1270
 
 if test ! -f $SCHEMA_FILE
 then
     echo "ERROR: The schema creation script \"$SCHEMA_FILE\" is missing." >&2
     exit 2
 fi
-if test ! -f $CONTENT_FILE
+if test ! -f $BACKUP_FILE -a  ! -f $CONTENT_FILE
 then
-    echo "ERROR: The schema creation script \"$CONTENT_FILE\" is missing." >&2
+    echo "ERROR: The schema creation script \"$CONTENT_FILE\" is missing as well as the backup file $BACKUP_FILE." >&2
     exit 2
 fi
 
@@ -26,7 +28,7 @@ MINUTE=`date +%M`
 ERROR=true
 if test "x$1" = "x-f"
 then
-    if test "$2" -eq $MINUTE
+    if test "$2" -eq $MINUTE -o "$2" -eq "99"
     then
 	ERROR=false
     fi
@@ -70,13 +72,20 @@ AUTH_USER=root
 
 echo "You will be prompted for the database password for $AUTH_USER"
 
-mysql --user=${AUTH_USER} --password <<EOF
+if test -f $BACKUP_FILE
+then
+    RESTORE_FILE=$BACKUP_FILE
+else
+    RESTORE_FILE=$CONTENT_FILE
+fi
+
+mysql --user=${AUTH_USER} --password="$ROOT_PW" <<EOF
   drop database if exists $DATABASE; 
   create database $DATABASE; 
   grant select,insert,update,delete,create,drop,alter on ${DATABASE}.* to ${USER}@${HOST} identified by '${PASSWORD}';
   flush privileges;
   use $DATABASE;
   source $SCHEMA_FILE;
-  source $CONTENT_FILE;
+  source $RESTORE_FILE;
 EOF
 

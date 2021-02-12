@@ -2523,7 +2523,7 @@ sub doStaticValues
             my $sep = "";
             foreach my $nnrec ( @nnrecs ) {
                 $result .= $sep . $nnrec->{$field};
-                $sep = br, "\n";
+                $sep = br . "\n";
             }
         }
 
@@ -2603,7 +2603,7 @@ sub doMustLogin
 sub doLoginForm
 {
     my $menuFormat = Param::getValueByName("menu-login-form");
-    my $args = @_[0];
+    my $args = $_[0];
 #    $args->{'message'} = Dumper($menuFormat);
     if ( $menuFormat && $menuFormat->{'value'} ) { 
         return doMenuFormatLoginForm($args);

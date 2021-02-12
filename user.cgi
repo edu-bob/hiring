@@ -326,7 +326,7 @@ sub doForgot
     print Layout::doForgotPasswordForm({
                                        -heading=>$heading,
                                        });
-    print end_htnl;
+    print end_html;
 }
 
 ##
@@ -412,9 +412,9 @@ sub doPasswordEmail
       my $me = Param::getValueByName("title") || "Candidate Tracker";
 
       $body .= p("The $me received a request to send you a password reset link.");
-      $body .= p("If you didn't request it, delete this message.  Otherwise, click on the link below."), "\n";
+      $body .= p("If you didn't request it, delete this message.  Otherwise, click on the link below.") . "\n";
       $body .= p("This link can be used exactly once.");
-      $body .= p(a({-href=>$url}, "Reset password for $rec->{'name'}")), br, "\n";
+      $body .= p(a({-href=>$url}, "Reset password for $rec->{'name'}")) . br . "\n";
       $body .= "\n--$boundary--\n";
 
 #      print p("BODY"), $body;
@@ -473,10 +473,10 @@ sub doPasswordReset()
       $result .= Layout::startForm({
           -action => "user.cgi",
           -name => "passwordform",
-                                   }), "\n";
+                                   }) . "\n";
       param("op", "passwordresetfinish");
-      $result .= hidden({-name => "op", -default => "passwordresetfinish"}), "\n";
-      $result .= hidden({-name => "token", -default => $token}), "\n";
+      $result .= hidden({-name => "op", -default => "passwordresetfinish"}) . "\n";
+      $result .= hidden({-name => "token", -default => $token}) . "\n";
 
       $result .= start_table({-border=>"0"}) . "\n";
       
