@@ -216,19 +216,24 @@ sub doFirstPage
     print Query::standardForm("queryform");
     print table({-cellpadding=>3},
 		Tr(
-		   td({-valign=>"top"}, 
-		      checkbox({-name=>"sfa", -value=>1, -label=>"Group by Next Action"}),
-		      br,
-		      checkbox({-name=>"nolinks", -value=>1, -label=>"Omit all links (default for recruiter mode)"})),
+		    td({-valign=>"top", -align=>"right"}, b("Group by: ")),
+		    td({-valign=>"top"}, radio_group({-name=>"groupby",
+							 -values=>["none", "action", "status"],
+							 -labels=>{'none'=>"None",
+								   'action'=>"Next Action",
+								       'status'=>"Status"},
+							 -linebreak=>1
+						     })),
 		   td("&nbsp;&nbsp;&nbsp;&nbsp;"),
-		   td({-valign=>"top", -align=>"right"}, "Format: ",),
+		   td({-valign=>"top", -align=>"right"}, b("Format: ")),
 		   td({-valign=>"top"}, radio_group({-name=>"format",
 						     -values=>['standard', 'recruiter', 'long'],
 						     -linebreak=>'true',
 						     -labels=>{'standard'=>"Standard",
 							       'recruiter'=>"Recruiter",
-							       'long'=>"Long"}})),)
-		);
+								   'long'=>"Long"}})),
+		td({-valign=>"top"},checkbox({-name=>"nolinks", -value=>1, -label=>"Omit all links (default for recruiter mode)"}))
+		));
     print br(),submit({-name=>"Search"}), "&nbsp;", reset({-name=>"Clear Form"}), "\n";
     print Layout::endForm;
     print Footer(),"\n";
@@ -258,22 +263,31 @@ sub doQuery
     }
 
     my $self_url = self_url();
-    my $sfa;
+    my $groupby = param("groupby");
     my $sort = param("sort");
     my $sortorder = param("sortorder");
-    if (defined param("sfa") ) {
+
+    if (defined $groupby && $groupby ne "none") {
+	## If sorting by something other than action is defined, override the group by parameters
 	if ( defined $sort ) {
-	    if ( $sort =~ /^action_id/ ) {
-		$sfa = 1;
-	    } else {
-		$sfa = 0;
+	    if ( $groupby eq 'action' ) {
+		if ( $sort !~ /^action_id/ ) {
+		    $groupby = undef
+		}
+	    } elsif ( $groupby eq 'status' ) {
+		if ( $sort !~ /^status/ ) {
+		    $groupby = undef
+		}
 	    }
 	} else {
-	    $sfa = 1;
-	    $sort = "action_id.precedence-n";
+	    if ( $groupby eq 'action' ) {
+		$sort = "action_id.precedence-n";
+	    } elsif ( $groupby eq 'status' ) {
+		$sort = 'status';
+	    }
 	}
     } else {
-	$sfa = 0;
+	$groupby = undef;
     }
 
     ## These are the sort urls for the column headings
@@ -333,7 +347,20 @@ sub doQuery
 
     print doHeading({-title=>"Query Candidates Results"});
 
+    Delete("sort","sortorder", "groupby");
+    param("groupby","action");
+    my $groupby_action = self_url();
+    param("groupby", "status");
+    my $groupby_status = self_url();
+    Delete("groupby");
+    my $groupby_none = self_url();
 
+    print p(
+	a({-href=>$groupby_action},"Group by action"), " | ", 
+	a({-href=>$groupby_status},"Group by status"), " | ",
+	a({-href=>$groupby_none}, "Group by none")
+	);
+    
     my ($query, $hashes) = Query::makeQuery({  });
 
     ##
@@ -394,27 +421,46 @@ sub doQuery
     }
     my $row = 0;
     my $color;
-    my $lastaction = "impossible";
+    my $lastsection = "impossible";
     foreach $r ( @results ) {
 	my $doheading = 0;
-	if ( $sfa ) {
-	    my $thisaction = (!defined $r->{'action_id'} || !$r->{'action_id'} ? 0 : $r->{'action_id'} );
-	    if ( $lastaction ne $thisaction ) {
-		print end_table, br;
-		print table({-border=>"0", -cellspacing=>"6", -cellpadding=>"4", -width=>"100%"},
-			    Tr(
-			       td({-bgcolor=>"#ffffff", -valign=>"bottom"},
-				  font({-size=>"4"},
-				       ("Next Action: ", $r->{'action_id.action'} ? $r->{'action_id.action'} : "none specified"),
+	if ( $groupby ) {
+	    my $thissection;
+	    if ( $groupby eq 'action' ) {
+		# WOLF FENCE
+		$thissection = (!defined $r->{'action_id'} || !$r->{'action_id'} ? 0 : $r->{'action_id'} );
+		if ( $lastsection ne $thissection ) {
+		    print end_table, br;
+		    print table({-border=>"0", -cellspacing=>"6", -cellpadding=>"4", -width=>"100%"},
+				Tr(
+				    td({-bgcolor=>"#ffffff", -valign=>"bottom"},
+				       font({-size=>"4"},
+					    ("Next Action: ", $r->{'action_id.action'} ? $r->{'action_id.action'} : "none specified"),
 				       ))));
-		$lastaction = $thisaction;
-		$doheading = 1;
-		$row = 0;
+		    $lastsection = $thissection;
+		    $doheading = 1;
+		    $row = 0;
+		}
+	    } elsif ( $groupby eq "status" ) {
+		$thissection = (!defined $r->{'status'} || !$r->{'status'} ? 0 : $r->{'status'} );
+		if ( $lastsection ne $thissection ) {
+		    print end_table, br;
+		    print table({-border=>"0", -cellspacing=>"6", -cellpadding=>"4", -width=>"100%"},
+				Tr(
+				    td({-bgcolor=>"#ffffff", -valign=>"bottom"},
+				       font({-size=>"4"},
+					    ("Status: ", $r->{'status'} ? $r->{'status'} : "UNDEFINED"),
+				       ))));
+		    $lastsection = $thissection;
+		    $doheading = 1;
+		    $row = 0;
+		}
 	    }
+	    
 	} else {
-	    if ( $lastaction eq "impossible" ) {
+	    if ( $lastsection eq "impossible" ) {
 		$doheading = 1;
-		$lastaction = "x";
+		$lastsection = "x";
 	    }
 	}
 	if ( $doheading ) {
