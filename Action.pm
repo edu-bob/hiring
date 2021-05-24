@@ -64,4 +64,11 @@ sub convert
     }
 }
 
+sub getAll
+{
+    return Database::getAllRecords({
+        -table=>$metaData,
+    });
+}
+
 1;

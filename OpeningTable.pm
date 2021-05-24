@@ -104,6 +104,15 @@ use OpeningCcTable;
 	},
 	{
 	    type => "N-N",
+	    heading => "Action",
+	    table => \%::OpeningActionTable,
+	    column => ["opening_id","action_id"],
+	    hashkey => "action",
+	    help => "Select actions to allow on this opening",
+	    widget => "Left/Right",
+	},
+	{
+	    type => "N-N",
 	    heading => "Evaluation Form",
 	    table => \%::OpeningEvaluationTable,
 	    column => ["opening_id","evaluation_id"],

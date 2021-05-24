@@ -6,44 +6,51 @@ use UserTable;
 
 
 %::CommentTable = (
-		   table => "comment",
-		   heading => "Comments",
-		   columns => [
-			       {
-				   column => "id",
-				   heading => "Id",
-				   type => "pk",
-			       },
-			       {
-				   column => "creation",
-				   heading => "Creation",
-				   type => "datetime",
-			       },
-			       {
-				   column => "comment",
-				   heading => "Comment",
-				   type => "bigtext",
-			       },
-			       {
-				   column => "user_id",
-				   heading => "User",
-				   type => "fk",
-				   values => {
-				       table => \%::UserTable,
-				       pk => "id",
-				       label => "name",
-				   },
-			       },
-			       {
-				   column => "candidate_id",
-				   heading => "Candidate",
-				   type => "fk",
-				   values => {
-				       table => \%::CandidateTable,
-				       pk => "id",
-				       label => "name",
-				   },
-			       },
-			       ]
-		   );
+    table => "comment",
+    heading => "Comments",
+    columns => [
+	{
+	    column => "id",
+	    heading => "Id",
+	    type => "pk",
+	},
+	{
+	    column => "creation",
+	    heading => "Creation",
+	    type => "datetime",
+	},
+	{
+	    column => "comment",
+	    heading => "Comment",
+	    type => "bigtext",
+	},
+	{
+	    column => "confidential",
+	    heading => "Confidential?",
+	    secure => 'owner',
+	    type => 'enum',
+	    help => 'Y or N: Is this comment confidential (only creator can see)',
+	},
+	{
+	    column => "user_id",
+	    heading => "User",
+	    type => "fk",
+	    values => {
+		table => \%::UserTable,
+		pk => "id",
+		label => "name",
+	    },
+	},
+	{
+	    column => "candidate_id",
+	    heading => "Candidate",
+	    type => "fk",
+	    values => {
+		table => \%::CandidateTable,
+		pk => "id",
+		label => "name",
+	    },
+	},
+    ]
+    );
 1;

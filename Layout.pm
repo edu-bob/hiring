@@ -523,7 +523,7 @@ sub PulldownMenu
 {
     my $argv = shift;
     argcvt($argv, ["table", "column"],
-           ['null', 'default', 'onchange', 'name', 'suffix', 'skipfilters',
+           ['null', 'default', 'onchange', 'name', 'suffix', 'skipfilters','id',
            'clientonchange']);
     my $table = $$argv{'table'};
     my $column = findColumn($argv);
@@ -531,6 +531,7 @@ sub PulldownMenu
 
     my $result = "";
     my %labels = ();
+#    Utility::ObjDump($argv);
 
   TYPE: {
       $column->{'type'} eq "enum" and do {
@@ -619,6 +620,7 @@ sub PulldownMenu
 
     exists $$argv{'default'} and $args{'default'} = $$argv{'default'};
     exists $$argv{'onchange'} and $args{'onchange'} = $$argv{'onchange'};
+    $$argv{'id'} and $args{'id'} = $$argv{'id'};
 
     return popup_menu(\%args);
 }
@@ -1799,13 +1801,14 @@ sub doSingleFormElement
     my $argv = shift;
     argcvt($argv,
            ['table', 'column'],
-           ['record', 'suffix', 'onchange', 'back', 'form', 'div', 'debug',
+           ['record', 'suffix', 'onchange', 'back', 'form', 'div', 'debug', 'id',
            'clientonchange']);
     my $table = $$argv{'table'};
     my $column = $$argv{'column'};
     my $values = $$argv{'record'};
     my $form = $$argv{'form'};
     my $div = $$argv{'div'};
+    my $argv_id = $$argv{'id'};
     my $debug = $$argv{'debug'};
     my $suffix = $$argv{'suffix'} ? $$argv{'suffix'} : "";
     my $clientonchange = $$argv{'clientonchange'};
@@ -1828,6 +1831,8 @@ sub doSingleFormElement
 
   SW:{
 
+      ## TODO: Add -id everywhere
+      
       ## ENUM type
       ## If this element is a part of a group, then need to
       ## augment the onchange tag to contain a call to the
@@ -1839,7 +1844,7 @@ sub doSingleFormElement
               $args = {-table=>$table,
                           -column=>$tcol->{'column'},
                           -null=>$::MENU_NONE,
-                          -suffix=>$suffix,
+                           -suffix=>$suffix,
                           -onchange=>$$argv{'onchange'},
                       };
               if ( defined $values ) {
@@ -1861,7 +1866,7 @@ sub doSingleFormElement
               $args = {
                   -table=>$table,
                   -column=>$tcol->{'column'},
-                  -suffix=>$suffix,
+                      -suffix=>$suffix,
                   -onchange=>$$argv{'onchange'},
               };
               if ( defined $values ) {
@@ -2194,11 +2199,14 @@ sub doSingleFormElement
                   -column=>$tcol->{'values'}{'label'},
                   -null=>$::MENU_NONE,
                   -name=>$tcol->{'column'},
-#                  -id=>$tcol->{'column'}, ## XXX
                   -suffix=>$suffix,
                   -onchange=>$$argv{'onchange'},
                   -clientonchange=>$clientonchange,
               };
+              if ( $argv_id ) {
+                  $$args{'id'} = $argv_id;
+              }
+
               if ( defined $values  && exists $values->{$tcol->{'column'}} ) {
                   $$args{'-default'} = $values->{$tcol->{'column'}};
                   Layout::addVariant({

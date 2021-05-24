@@ -30,3 +30,24 @@ function setCCList(me)
     }
 
 }
+function setActionList(me)
+{
+    // Get the job opening that was selected
+    var opening_id = me.value;
+    var action_form = document.form000.action_id;
+    if ( actionmap[opening_id] ) {
+	// remove existing options from the Action menu
+	len = action_form.options.length
+	for ( var i=len ; i >= 0 ; i-- ) {
+	    action_form.remove(i);
+	}
+	for ( index in actionmap[opening_id] ) {
+	    var action = actions[index];
+	    var option = document.createElement('option');
+            option.text = actions[actionmap[opening_id][index]];
+	    option.value = actionmap[opening_id][index];
+	    action_form.add(option);
+	}
+    }
+
+}

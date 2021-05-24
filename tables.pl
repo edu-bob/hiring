@@ -12,6 +12,7 @@ use CronTable;
 use DepartmentTable;
 use DocumentTable;
 use EvaluationTable;
+use OpeningActionTable;
 use OpeningEvaluationTable;
 use FrontlinkTable;
 use InterviewPersonTable;
@@ -46,6 +47,7 @@ use UserTable;
     \%::InterviewTable,
     \%::KeywordTable,
     \%::OpeningTable,
+    \%::OpeningActionTable,
     \%::OpeningEvaluationTable,
     \%::ParamTable,
     \%::RatingTable,

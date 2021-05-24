@@ -39,6 +39,7 @@ use Application;
 use Cc;
 use Template;
 use OpeningCc;
+use OpeningAction;
 use OpeningEvaluation;
 
 use CandidateTable;
@@ -194,6 +195,7 @@ sub doAdd
 ## and add that to the head section.
 
     my $ccjs = OpeningCc::generateCCJavaScript();
+    my $actionjs = OpeningAction::generateActionJavaScript();
     print doHeading({-title=>"Add a Candidate",
 		     -script=>[
 			  {
@@ -203,6 +205,10 @@ sub doAdd
 			  {
 			      -language=>'JavaScript1.2',
 			      -code =>$ccjs,
+			  },
+			  {
+			      -language=>'JavaScript1.2',
+			      -code =>$actionjs,
 			  },
 			 ],
 		    });
@@ -224,10 +230,10 @@ sub doAdd
     hidden({-name=>"pass", -default=>"1"}), "\n", "\n";
     print doEntryForm({
 	-table=>\%::CandidateTable,
-	-record=>$record,
-	-back=>$self_url,
-	-clientonchange=>{
-	    'opening_id' => 'setCCList(this);',
+	    -record=>$record,
+	    -back=>$self_url,
+	    -clientonchange=>{
+		'opening_id' => 'setCCList(this);setActionList(this);' # XXX RLB
 	},
     });
 
@@ -1149,10 +1155,26 @@ END
         return;
     }
 
+    my $actionjs = OpeningAction::generateActionJavaScript();
+
     print doHeading({
         -title=>"Candidate $$candidate{'name'}",
-        -script=>$GET_JSCRIPT,
-    });
+	    -script=>[
+	     {
+		 -language=>'JavaScript1.2',
+		     -src=>'javascript/actionlist.js'
+	     },
+	     {
+		 -language=>'JavaScript1.2',
+		     -code=>$GET_JSCRIPT,
+	     },
+	     {
+		 -language=>'JavaScript1.2',
+		     -code=>$actionjs
+	     }
+	    ],
+	    -onload=>"fixActionList($$candidate{'opening_id'},'action_id_new', $$candidate{'action_id'});",
+		    });
 
     print Layout::startForm({-action=>url()});
     param("op", "edit");
@@ -1259,22 +1281,26 @@ END
 	print start_table({-cellpadding=>"4"});
 	print Tr(
 		 td(b("When")),
-		 td(b("Submitted By")),
+	    td(b("Submitted By")),
+	    td(b("Confidential?")),
 		 td(b("View")),
 		 td(b("Edit")),
 		 td(b("Text . . .")),
 		 );
 	foreach my $c ( @comments ) {
 	    my $r = User::getRecord($c->{'user_id'});
-
+	    if ( $$c{'confidential'} eq 'Y' and $$r{'id'} != Login::getLoginId() ) {
+		next;
+	    }
 	    my $more = length $c->{'comment'} > 60 ? " . . ." : "";
 
 	    print Tr(
 		     td($c->{'creation'}),
-		     td("$$r{'name'}"),
+		td("$$r{'name'}"),
+		td({-align=>"center"},$c->{'confidential'}),
 		     td(a({-href=>"$url?op=viewcomment;id=$c->{'id'};candidate=$id"}, "View")),
 		     td(a({-href=>"$url?op=editcomment;id=$c->{'id'};candidate=$id"}, "Edit")),
-		     td(Utility::cvtTextline(substr($c->{'comment'},0,60)), $more),
+		     td(($$c{'confidential'} eq 'Y' ? "[Click \"View\" to see]" : (Utility::cvtTextline(substr($c->{'comment'},0,60)) . $more))),
 		     );
 	}
 	print end_table;
@@ -1291,7 +1317,7 @@ END
     ## Schedules list, allowing view and edit
     ##
 
-Candidate::getInterviewers($id);
+    Candidate::getInterviewers($id);
 
     print h2("Schedules"), "\n";
     if ( isLoggedIn() ) {
@@ -1349,7 +1375,7 @@ Candidate::getInterviewers($id);
 			   -bgcolor=>"#e0e0e0"}),
 	start_Tr, start_td;
 	print Layout::startForm({-action=>url(), -enctype=>'multipart/form-data'});
-	print h1("Make changes");
+	print h1("Make changes to $$candidate{'name'}");
 
 	print h2(a({-name=>"comment"}, "Add a Comment")), "\n";
 	my $links = OpeningEvaluation::getInsertLinks(Layout::getForm(),$candidate->{'opening_id'}, 'comment_0');
@@ -1367,7 +1393,7 @@ Candidate::getInterviewers($id);
 		 td({
 		     -align=>"right",
 		 },
-		    b("Comments:"),
+		    b("Comment:"),
 		    br,
 		    Template::getMenu({-table=>"comment",
 				-column=>"comment",
@@ -1380,7 +1406,22 @@ Candidate::getInterviewers($id);
 		     -rows=>"12",
 		     -columns=>"80"
 		     })), "\n"
-		 );
+	    );
+	print Tr(
+	    td({-align=>"right"},
+	       b("Confidential?"),
+	    ), "\n",
+	    td(
+		Layout::doSingleFormElement({
+                        -table=>\%::CommentTable,
+                        -column=>"confidential",
+                        -record=>$candidate,
+                        -form=>undef,
+                        -div=>undef,
+			    -suffix => "_0",
+					    }),
+	    )
+	    );
 	print end_table, "\n";
 
 	##
@@ -1436,6 +1477,8 @@ Candidate::getInterviewers($id);
 		);
 	}
 
+	## TODO Only show actions appropriate to this candidate
+	
 	print Tr(
 		 td({-align=>"right"},b("Next Action:")), "\n",
 		 td(
@@ -1445,7 +1488,8 @@ Candidate::getInterviewers($id);
 			-record=>$candidate,
 			-form=>undef,
 			-div=>undef,
-			-suffix => "_new",
+			    -suffix => "_new",
+			    -id => "action_id_new",
 			})), "\n",
 		 );
 
@@ -1491,7 +1535,7 @@ Candidate::getInterviewers($id);
 
 	## submit
 
-	print submit({-name=>"Save Additions"}), "\n";
+	print submit({-name=>"Save Additions"}), " to $$candidate{'name'}\n";
 	print Layout::endForm, "\n";
 	print end_table;
 
@@ -1556,14 +1600,14 @@ sub doViewComment
     print start_p;
     if ( $prev > 0 ) {
 	my $link = url() . "?op=viewcomment;id=$prev;candidate=$candidate_id";
-	print a({-href=>$link}, "< Previous");
+	print a({-href=>$link}, "< Previous comment");
 	if ( $next > 0 ) {
 	    print " | ";
 	}
     }
     if ( $next > 0 ) {
 	my $link = url() . "?op=viewcomment;id=$next;candidate=$candidate_id";
-	print a({-href=>$link}, "Next >");
+	print a({-href=>$link}, "Next comment >");
     }
     print end_p;
 
@@ -1799,11 +1843,13 @@ sub doAddStuffFinish
     ##
 
     my $comment = param("comment_0");
+    my $confidential = param ("confidential_0");
     if ( defined $comment && $comment !~ /^\s*$/ ) {
 	$haveComment = 1;
 	my $rec;
 	$$rec{'candidate_id'} = $candidate_id;
 	$$rec{'user_id'} = $user_id;
+	$$rec{'confidential'} = $confidential;
 	$comment_id = doInsertFromParams({-table=>\%::CommentTable,
 					  -changes=>$changes,
 					  -suffix=>"_0",
