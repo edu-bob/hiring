@@ -696,7 +696,7 @@ sub makeWhereClause
     }
     if ( exists $$argv{'start'} && $$argv{'start'} && exists $$argv{'end'} && $$argv{'end'}) {
         $where .= "$and ";
-        $where .= "candidate.creation BETWEEN " . SQLQuote($$argv{'start'}) . " AND " . SQLQuote($$argv{'end'});
+        $where .= "date(candidate.creation) BETWEEN " . SQLQuote($$argv{'start'}) . " AND " . SQLQuote($$argv{'end'});
         $and = " AND";
     }
     if ( $$argv{'opening'} && exists $$argv{'opening'} && scalar @{$$argv{'opening'}} > 0 ) {
