@@ -4,3 +4,4 @@ permission to change the candidate's status field.
 Finish the "confidential" implementation for comments
 Finish the opening<->action join logic
 
+Add ability to delete comments in the candidate edit page

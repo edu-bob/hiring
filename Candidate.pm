@@ -275,10 +275,10 @@ sub formatRatings
     } else {
 	$result .= start_table({-cellpadding=>"4"});
 	$result .= Tr(
-		 td(b("When")),
-		 td(b("By")),
-		 td(b("Rating")),
-		 td(b("Short Comment")),
+		 th({-class=>"inline"},"When"),
+		 th({-class=>"inline"},"By"),
+		 th({-class=>"inline"},"Rating"),
+		 th({-class=>"inline"},"Short Comment"),
 		 );
 	my $sum = 0;
 	foreach my $c ( @ratings ) {
@@ -304,7 +304,7 @@ sub formatRatings
 }
 
 ##
-## This is used by the calendar function
+## This is used by the calendar function.  Returns HTML to put into the calendar
 ##
 
 sub getCandidatesByDate

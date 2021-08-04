@@ -189,7 +189,7 @@ sub doGo
 #	}
 #	print end_table;
 #    }
-    print end_html;
+    print Footer({-url=>self_url()}), end_html, "\n";
 }
 
 

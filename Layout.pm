@@ -1215,6 +1215,9 @@ sub doEditTable
     foreach my $r ( @allresults ) {
         my %values;
         foreach $tcol ( @{$table->{'columns'}} ) {
+            if ( $tcol->{'private'} ) {
+                next;
+            }
             $values{$tcol->{'column'}} = shift @$r;
         }
         

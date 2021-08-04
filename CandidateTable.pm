@@ -77,29 +77,36 @@ use RecruiterTable;
 	    column => "external",
 	    heading => "Source Link",
 	    type => "url",
-	    width => 32,
+	    width => 40,
 	    help => "A full URL to an external system from which this candidate came."
 	},
 	{
 	    column => "resumeurl",
 	    heading => "Online Resume URL",
 	    type => "url",
-	    width => 32,
+	    width => 40,
 	    help => "A full URL to an external page containing the resume."
 	},
 	{
 	    column => "portfolio",
-	    heading => "Portfolio Link",
+	    heading => "Portfolio/git Link",
 	    type => "url",
-	    width => 32,
+	    width => 40,
 	    help => "A full URL to an external system having the art or code portfolio."
 	},
 	{
 	    column => "linkedin",
 	    heading => "LinkedIn Link",
 	    type => "url",
-	    width => 32,
+	    width => 40,
 	    help => "A full URL to their LinkedIn page."
+	},
+	{
+	    column => "assessment_url",
+	    heading => "Assessment Link",
+	    type => "url",
+	    width => 40,
+	    help => "A full URL assessment (CoderByte, HackerRank) page."
 	},
 	{
 	    column => "address",

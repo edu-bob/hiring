@@ -17,7 +17,7 @@ BEGIN { unshift @INC, "."; }
 ##
 
 use Getopt::Std;
-use CGI qw(:standard -nosticky *table *Tr *td *p *ul *blockquote);
+use CGI qw(:standard -nosticky *table *Tr *td *p *ul *blockquote, *div);
 use CGI::Carp qw(fatalsToBrowser);
 use Mail::Mailer;
 use File::Path;
@@ -650,7 +650,34 @@ Use this to add a comment at the same time as editing the candidate's record")),
 		     ),
 		  );
 
-
+      ##
+      ## List of attached comments with "Delete" checkboxes
+      ##
+      print h3("Remove Comments");
+      my @coms = getRecordsMatch({
+	  -table=>\%::CommentTable,
+	      -column=>"candidate_id",
+	      -value=>$pk,
+				 });
+      if ( scalar @coms == 0 ) {
+	  print p("None.");
+      } else {
+	  print start_table({-cellpadding=>"4"});
+          print Tr(
+                   td(b("Delete")),
+                   td(b("Created")),
+                   td(b("Comment")),
+                   );
+          foreach my $c ( @coms ) {
+	      print Tr(
+		       td(checkbox({-name=>"del_comment_$c->{'id'}", -label=>""})),
+		       td($c->{'creation'}),
+		       td(Comment::convert_comment($c->{'comment'}, 80)),
+		       );
+	  }
+	  print end_table;
+      }
+	      
       ##
       ## List of attached documents with "Delete" checkboxes
       ##
@@ -840,10 +867,22 @@ sub doEditFinish
       }
 
 
-      ## Process delete checkboxes in the documents list
+      ## Process simple delete checkboxes in the various lists
 
       my @params = param();
       foreach my $p ( @params ) {
+	  if ( $p =~ /del_comment_([0-9]+)/ ) {
+	      my $id = $1;
+	      my $query = "DELETE FROM comment WHERE id = " . SQLQuote($id);
+	      SQLSend($query);
+	      $changes->add({-table=>"candidate",
+			     -column=>"comment",
+			     -row=>$candidate_id,
+			     -type=>"REMOVE",
+			     -old=>$id,
+			     -user=>getLoginId(),
+			 });
+	  }
 	  if ( $p =~ /^delete([0-9]+)/ ) {
 	      my $id = $1;
 	      my $query = "DELETE FROM document WHERE id = " . SQLQuote($id);
@@ -1188,51 +1227,23 @@ END
 			  -record=>$candidate,
 			 -class=>"striped"});
 
-    print start_table({
-	-border=>"0",
-	-cellspacing=>"0",
-	-cellpadding=>"4",
-    }), "\n";
-    print start_Tr, "\n";
-    print start_td({-valign=>"top"});
-    if ( isLoggedIn() ) {
-	print a({-href=>"#comment"}, "Add a comment"), br;
-	print a({-href=>"#rating"}, "Add a rating");
-    } else {
-	my $addcommenturl = url() . "?op=addcomment;id=$id";
-	print a({-href=>$addcommenturl}, "Add a comment"), br;
-	my $addratingurl = url() . "?op=addrating;id=$id";
-	print a({-href=>$addratingurl}, "Add a rating");
-    }
-    print br();
-    if ( isLoggedIn() ) {
-	print a({-href=>"#upload"}, "Upload a document");
-    } else {
-	my $uploadurl = url() . "?op=upload;id=$id";
-	print a({-href=>$uploadurl}, "Upload a document");
-    }
-    print br();
-    print a({-href=>"schedule.cgi?candidate_id=$id"},
-	    "Create an interview schedule"), "\n";
-    print br();
-    print a({-href=>"reference-letter.cgi?id=$id"}, "Create ref check letter");
-    print end_td, "\n";
+    print h2("Actions"), "\n";
+    print start_div({-style=>""});
 
-    print start_td({-valign=>"top"});
+    print start_ul, "\n";
+    print li({-class=>"clickable"},a({-href=>"schedule.cgi?candidate_id=$id"},
+	    "Create an interview schedule")), "\n";
+    print li({-class=>"clickable"},a({-href=>"reference-letter.cgi?id=$id"}, "Create ref check letter"));
+
     my $auditurl = url() . "?op=audit&id=$id";
-    print a({-href=>$auditurl}, "Show change log"), br;
-    print end_td, "\n";
+    print li({-class=>"clickable"},a({-href=>$auditurl}, "Show change log")), "\n";
     my $rejecturl = url() . "?op=reject&id=$id";
-    print start_td({-valign=>"top"});
-#    print a({-href=>$rejecturl}, "Reject candidate");
     if ( $user->{'changestatus'} eq 'Y' || isAdmin() ) {
-        print a({-href=>"javascript:doreject('$rejecturl');"}, "Reject candidate");
+        print li({-class=>"clickable"},a({-href=>"javascript:doreject('$rejecturl');"}, "Reject candidate")), "\n";
     }
-    print end_td;
-    print end_Tr, "\n";
+    print end_ul;
 
-    print p();
-    print end_table, "\n";
+    print end_div, "\n";
 
     print h2("Attached Documents");
     my @docs = getRecordsMatch({
@@ -1245,9 +1256,12 @@ END
     } else {
 	print start_table({-cellpadding=>"4"});
 	print Tr(
-		 td(b("Created")),
-		 td(b("Contents")),
-		 td(b("Filename")),
+#		 td(b("Created")),
+#		 td(b("Contents")),
+#		 td(b("Filename")),
+		 th({-class=>"inline"},"Created"),
+		 th({-class=>"inline"},"Contents"),
+		 th({-class=>"inline"},"Filename"),
 		 );
 	foreach my $d ( @docs ) {
 	    print Tr(
@@ -1277,15 +1291,15 @@ END
 	print p("None.");
     } else {
 	my $url = url();
-	print p(a({-href=>"$url?op=viewallcomments&candidate=$id"},"View All Comments"));
+	print p(a({-href=>"$url?op=viewallcomments&candidate=$id"},"View Full Comments Together"));
 	print start_table({-cellpadding=>"4"});
 	print Tr(
-		 td(b("When")),
-	    td(b("Submitted By")),
-	    td(b("Confidential?")),
-		 td(b("View")),
-		 td(b("Edit")),
-		 td(b("Text . . .")),
+	    th({-class=>"inline"},"When"),
+	    th({-class=>"inline"},"Submitted By"),
+	    th({-class=>"inline"},"Confidential?"),
+	    th({-class=>"inline"},"View"),
+	    th({-class=>"inline"},"Edit"),
+	    th({-class=>"inline"},"Text . . ."),
 		 );
 	foreach my $c ( @comments ) {
 	    my $r = User::getRecord($c->{'user_id'});
@@ -1334,12 +1348,12 @@ END
     } else {
 	print start_table({-cellpadding=>"4"});
 	print Tr(
-		 td(b("When")),
-		 td(b("Status")),
-		 td({-colspan=>"1", -align=>"center"}, b("View for")),
-		 td(b("Edit")),
-		 td(b("Who")),
-		 td(b("Description")),
+		 th({-class=>"inline"},"When"),
+		 th({-class=>"inline"},"Status"),
+		 th({-class=>"inline", -colspan=>"1", -align=>"center"}, b("View for")),
+		 th({-class=>"inline"},"Edit"),
+		 th({-class=>"inline"},"Who"),
+		 th({-class=>"inline"},"Description"),
 		 );
 	foreach my $s ( @schedules ) {
 	    print start_Tr, "\n";

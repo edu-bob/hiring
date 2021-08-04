@@ -187,7 +187,7 @@ sub doFirstPage
 	  
 	  foreach my $rec ( @links ) {
 	      if ( $rec->{side} eq "LEFT" ) {
-		  print a({-href=>$rec->{url}}, $rec->{description}), br;
+		  print a({-class=>"quicklink", -href=>$rec->{url}}, $rec->{description}), br;
 	      }
 	  }
 	  print end_td;
@@ -197,7 +197,7 @@ sub doFirstPage
 	  
 	  foreach my $rec ( @links ) {
 	      if ( $rec->{side} eq "RIGHT" ) {
-		  print a({-href=>$rec->{url}}, $rec->{description}), br;
+		  print a({-class=>"quicklink", -href=>$rec->{url}}, $rec->{description}), br;
 	      }
 	  }
 	  print end_td;
@@ -207,7 +207,7 @@ sub doFirstPage
       }
       if ( isLoggedIn() ) {
 	  if ( isAdmin() || Param::getValueByName("frontlinks-anyone") eq "Y" ) {
-	      print p(a({-href=>'manage.cgi?table=frontlink'}, "Add quicklinks here.")), "\n";
+	      print p(a({-href=>'manage.cgi?table=frontlink'}, "Add quicklinks.")), "\n";
 	  }
       }
 

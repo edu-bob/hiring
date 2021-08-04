@@ -152,7 +152,7 @@ sub SQLSend(@)
     if ( $fulltrace ) {
         my $trace = "";
         my $sep = "";
-        for ( my $i=6; $i>0 ; $i-- ) {
+        for ( my $i=12; $i>0 ; $i-- ) {
             my ($pack, $file, $line, $subname, $hasargs, $wantarray) = caller($i);
             if ( defined $subname ) {
                 $trace .=  "$sep" . $subname . "() called from $file:$line";
@@ -714,14 +714,17 @@ sub formJoinQuery($)
             ##        user hiring-manager
             ##
             my $alias;
-            if ( !exists $aliasindex{$fk_table} ) {
-                $aliasindex{$fk_table} = 1;
-                $alias = $fk_table;
+            if ( exists $tcol->{'alias'} ) {
+                $alias = $tcol->{'alias'};
             } else {
-                $alias = sprintf("%s_%02d", $fk_table,$aliasindex{$fk_table});
-                $aliasindex{$fk_table}++;
+                if ( !exists $aliasindex{$fk_table} ) {
+                    $aliasindex{$fk_table} = 1;
+                    $alias = $fk_table;
+                } else {
+                    $alias = sprintf("%s_%02d", $fk_table,$aliasindex{$fk_table});
+                    $aliasindex{$fk_table}++;
+                }
             }
-
 
 
             my ($nselects, $ntables, $njoins, $nhashes) = formJoinQuery({-table=>$tcol->{'values'}->{'table'},

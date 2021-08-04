@@ -24,6 +24,14 @@ h2 { font-size:16px; margin-bottom:6px; }
 h3 { font-size:14px; margin-bottom:6px; }
 h4 { font-size:12px; margin-bottom:6px; }
 
+.quicklink {
+    font-size:16px;
+}
+
+li.clickable {
+  margin: 5px 0;
+}
+
 table.footer, td.footer { background-color: lightyellow; }
 table.footer { border-style: solid; border-width: thin; border-color: brown;}
 
@@ -35,7 +43,13 @@ table.odd, td.odd {background-color: #eeffee;}
 table.even, td.even {background-color: #ffffff;}
 
 th, td {
-  padding: 4px;
+  padding: 6px;
+}
+
+th.inline {
+  text-decoration: underline;
+  font-weight: normal;
+  text-align: left;
 }
 
 table.striped tr:nth-child(odd) {

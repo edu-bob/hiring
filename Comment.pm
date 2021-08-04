@@ -63,7 +63,7 @@ sub convert_candidate
 sub convert_comment
 {
     my $value = shift;
-    my $comment_length = 25;
+    my $comment_length = shift || 25;
 
     if ( length($value) > $comment_length ) {
         return substr($value, 0, $comment_length) . " . . .";

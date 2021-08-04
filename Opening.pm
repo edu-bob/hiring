@@ -53,8 +53,12 @@ sub addConverter {
 sub convert
 {
     my $value = shift;
-    my $rec = getRecordById({-table=>\%::OpeningTable, -id=>$value});
-    return $rec->{'description'};
+    if ( $value ) {
+        my $rec = getRecordById({-table=>\%::OpeningTable, -id=>$value});
+        return $rec->{'description'};
+    } else {
+        return "NULL";
+    }
 }
 
 ##
