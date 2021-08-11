@@ -104,9 +104,8 @@ use OpeningTable;
 	    type => 'text',
 	    help => 'MD5 key for enabling the change of the user password',
 	},
-## This can't work in Database::formJoinQuery
 	{
-	    column => "opening_id",
+	    column => "my_opening_id",
 	    heading => "Principal Opening",
 	    type => "fk",
 	    alias => "user_opening",

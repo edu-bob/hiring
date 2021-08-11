@@ -1371,10 +1371,10 @@ sub doEntryForm
         ## Only admins can set secure fields to something other
         ## than the default
         
-        if ( $tcol->{'secure'} eq 'admin' && !Login::isAdmin() ) {
+        if ( $tcol->{'secure'} && $tcol->{'secure'} eq 'admin' && !Login::isAdmin() ) {
             next;
         }
-        if ( $tcol->{'secure'} eq 'seesalary' && !Login::canSeeSalary() ) {
+        if ( $tcol->{'secure'} && $tcol->{'secure'} eq 'seesalary' && !Login::canSeeSalary() ) {
             next;
         }
 
@@ -2891,11 +2891,22 @@ sub doHeading
     $result .= start_html(\%args);
     
     if ( !exists $$argv{'noheading'} ) {
+
+        # This has to be done here because it fails in Application::Init for reasons yet unknown
+        my $user = Login::getLoginRec();
+        my $local_headstr = $Layout::headstr || "";
+        if ( $user->{'my_opening_id'} ) {
+            my $opening = Opening::getRecord($user->{'my_opening_id'});
+            if ( $opening ) {
+                $local_headstr = a({-href=>"query.cgi?op=query;status=NEW;status=ACTIVE;groupby=action;opening_id=" . $user->{'my_opening_id'} }, "$opening->{'description'} Candidates");
+            }
+        }
+
         $result .= table({-width=>"100%", -class=>"heading"},
                          Tr(
                             td(h1($$argv{'title'}), "\n"), "\n",
                             td({-align=>"right"}, a({-href=>Utility::rootURL()}, "Home"), br, "\n",
-                               $Layout::headstr),
+                               $local_headstr),
                             ), "\n",
                          ) . "\n";
         if ( !exists $$argv{'noline'} ) {

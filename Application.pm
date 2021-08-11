@@ -90,9 +90,8 @@ sub Init
     }
 
     if ( Login::isLoggedIn() ) {
-        my $mylist = "query.cgi?op=query;status=NEW;status=ACTIVE;groupby=action;owner_id=" . getLoginId();
-        ## XXX Change this to be the user's preferred opening listing if defined
-        Layout::setHeadingRight(a({-href=>$mylist}, "My Candidates"));
+            my $mylist = "query.cgi?op=query;status=NEW;status=ACTIVE;groupby=action;owner_id=" . getLoginId();
+            Layout::setHeadingRight(a({-href=>$mylist}, "My Candidates"));
     }
 
     Database::setFullTrace(1);

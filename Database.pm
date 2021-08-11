@@ -50,6 +50,7 @@ $VERSION = 1.00;
 #use Mysql;
 use DBI;
 use CGI qw(:standard *p *Tr *td *table *li *ul);
+use Data::Dumper;
 use Argcvt;
 use Utility;
 

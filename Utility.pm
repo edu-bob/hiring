@@ -19,6 +19,7 @@ require Exporter;
 @ISA=('Exporter');
 
 @EXPORT = qw(
+    preHTMLAbort
 );
 
 @EXPORT_OK = qw();

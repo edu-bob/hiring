@@ -14,14 +14,16 @@ require Exporter;
 $VERSION = 1.00;
 @ISA = qw(Exporter);
 
-@EXPORT = qw(&isLoggedIn
-             &getLoginId
-             &getLoginName
-             &getLoginEmail
-             &doLogout
-             &isAdmin
-             &canSeeSalary
-             );
+@EXPORT = qw(
+    &isLoggedIn
+    &getLoginId
+    &getLoginName
+    &getLoginRec
+    &getLoginEmail
+    &doLogout
+    &isAdmin
+    &canSeeSalary
+    );
 
 @EXPORT_OK = qw();              # Symbols to export on request
 

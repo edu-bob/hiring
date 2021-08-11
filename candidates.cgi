@@ -536,7 +536,7 @@ sub doAddFinish
 						-commenter=>getLoginName(),
 						-note=>$note,,
 						-showskips => 1,  ## This does NOT override 'seesalary'
-						-message => $msg,
+						-message => $message,
 				 });
 			  if ( !$sent ) {
 			      print p("CORRECTION: Nothing sent to $user->{'name'} at $user->{'email'}");
