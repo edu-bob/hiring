@@ -2929,7 +2929,7 @@ sub emailLink
     my $result = "";
     my $sep = "";
     foreach my $value ( @list ) {
-        $result .= $sep . a({-href=>"mailto:$value"},"$value");
+        $result .= $sep . a({-href=>"mailto:$value", -target=>"_blank"},"$value");
         $sep = ", ";
     }
     return $result;

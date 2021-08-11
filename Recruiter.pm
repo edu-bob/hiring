@@ -183,7 +183,7 @@ sub display
             $Subject = undef;
         }
 
-        $result .= "&nbsp;" . a({-href=>$url},
+        $result .= "&nbsp;" . a({-href=>$url,-target=>"_blank"},
                      img({-src=>"images/envelope.jpg"}));
     }
     return $result;
