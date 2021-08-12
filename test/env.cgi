@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+BEGIN {push @INC, "..";}
 use CGI qw(:standard);
 use Utility;
 

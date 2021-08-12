@@ -445,7 +445,7 @@ sub doPasswordEmail
 ## Process a reset password request
 ##
 
-sub doPasswordReset()
+sub doPasswordReset
 {
     ConnectToDatabase();
     print header;
@@ -502,7 +502,7 @@ sub doPasswordReset()
     print end_html;
 }
 
-sub doPasswordResetFinish()
+sub doPasswordResetFinish
 {
     ConnectToDatabase();
     print header;

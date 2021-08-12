@@ -43,6 +43,7 @@ use Utility;
 use DateTime;
 use LeftRightWidget;
 use OptionMenuWidget;
+use Opening;
 
 use Data::Dumper;
 
@@ -1646,10 +1647,10 @@ sub doEditForm
 
         # Only admins can change secure fields
 
-        if ( $tcol->{'secure'} eq 'secure' && !Login::isAdmin() ) {
+        if ( exists $tcol->{'secure'} && $tcol->{'secure'} eq 'secure' && !Login::isAdmin() ) {
             next;
         }
-        if ( $tcol->{'secure'} eq 'seesalary' && !Login::canSeeSalary() ) {
+        if ( exists $tcol->{'secure'} && $tcol->{'secure'} eq 'seesalary' && !Login::canSeeSalary() ) {
             next;
         }
 

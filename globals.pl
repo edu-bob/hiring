@@ -8,7 +8,7 @@ $::DOCROOTDIR = $::ENV{'DOCUMENT_ROOT'};
 
 $::MENU_SPECIFY = "---SPECIFY---";
 $::MENU_ANY = "---ANY---";
-$::MENU_NONE = "---NONE---";
+$::MENU_NONE = "---UNSPECIFIED---";
 
 $::LOGGEDIN = 0;
 $::USERNAME = "";

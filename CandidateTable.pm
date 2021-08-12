@@ -117,6 +117,13 @@ use RecruiterTable;
 	    help => "Current address"
 	},
 	{
+	    column => "work_location",
+	    heading => "Work Location Type",
+	    type => 'enum',
+	    nullable => 1,
+	    help => 'Where the candidate porefers to work'
+	},
+	{
 	    column => "cellphone",
 	    heading => "Cell Phone",
 	    type => "phone",
