@@ -6,6 +6,7 @@
 use Getopt::Std;
 use CGI qw(:standard -nosticky *table *Tr *td);
 use CGI::Carp qw(fatalsToBrowser);
+use Data::Dumper;
 
 require "globals.pl";
 
@@ -64,15 +65,16 @@ my @Standard = (
 		{
 		    heading => "Rating",
 		    url => 'ratings',
-		    field => 'ratings',
-		    align => "right",
-		    format => "%.2f",
+		    field => 'ratingstr',
+		    align => "left",
+		    expand => 'userratings'
 		},
 		{
 		    heading => "Coms",
 		    url => 'comments',
 		    field => 'commentstr',
-		    align => "center",
+		    align => "left",
+		    expand => "usercomments",
 		},
 		{
 		    heading => "Docs",
@@ -266,6 +268,11 @@ sub doQuery
     my $groupby = param("groupby");
     my $sort = param("sort");
     my $sortorder = param("sortorder");
+    my $expand = param("expand");
+
+    my $param_sort = param("sort");
+    my $param_sortorder = param("sortorder");
+    my $param_groupby = param("groupby");
 
     if (defined $groupby && $groupby ne "none") {
 	## If sorting by something other than action is defined, override the group by parameters
@@ -287,7 +294,7 @@ sub doQuery
 	    }
 	}
     } else {
-	$groupby = undef;
+#	$groupby = undef;
     }
 
     ## These are the sort urls for the column headings
@@ -321,7 +328,7 @@ sub doQuery
     param("sort", "documents-n");
     $sorturl{'documents'} = self_url();
 
-    param("sort", "ratings-n");
+    param("sort", "rating_avg-n");
     $sorturl{'ratings'} = self_url();
 
     param("sort", "action_id.precedence-n");
@@ -339,6 +346,12 @@ sub doQuery
     param("sort", "referrer");
     $sorturl{'referrer'} = self_url();
 
+    if ( $param_sort ) {
+	param("sort", $url_sort);
+    } else {
+	Delete("sort");
+    }
+
     ConnectToDatabase();
 
 
@@ -346,6 +359,8 @@ sub doQuery
     print header({-cookie=>"$cookie"});;
 
     print doHeading({-title=>"Query Candidates Results"});
+
+    my $expand_action = self_url();
 
     Delete("sort","sortorder", "groupby");
     param("groupby","action");
@@ -355,11 +370,39 @@ sub doQuery
     Delete("groupby");
     my $groupby_none = self_url();
 
-    print p(
+    if ( $param_sort ) {
+        param("sort", $param_sort);
+    } else {
+        Delete("sort");
+    }
+    if ( $param_groupby ) {
+        param("groupby", $param_groupby);
+    } else {
+        Delete("groupby");
+    }
+    print p("Legend:",
+	    ul(
+		li(b("Rating:"), i(" number of your ratings:")," / ",i(" total number of ratings")," &nbsp;",i("average overall rating")),
+		li(b("Coms:"), i(" number of your comments"), " / ", i("total number of comments")),
+		li(b("info:"), i(" whether we have contact info")),
+	    )
+	);
+    print p("Note: sorting by columns will turn off grouping, for now.");
+    print start_p;
+    print
 	a({-href=>$groupby_action},"Group by action"), " | ", 
 	a({-href=>$groupby_status},"Group by status"), " | ",
-	a({-href=>$groupby_none}, "Group by none")
-	);
+	a({-href=>$groupby_none}, "Group by none") , " &hellip; ";
+
+    if ( $expand ) {
+	Delete("expand");
+	print a({-href=>self_url()}, "Unexpand");
+    } else {
+	Delete("expand");
+	param("expand", 1);
+	print a({-href=>self_url()}, "Expand");
+    }
+    print end_p;
     
     my ($query, $hashes) = Query::makeQuery({  });
 
@@ -370,6 +413,11 @@ sub doQuery
     if ( param("include_cc") ) {
     } else {
     }
+
+    ##
+    ## Collects the results of the query and look for plug-in external calls
+    ##
+    
     my @results = Query::extendedResults($query, $hashes);
 #    print Utility::ObjDump(\@results);
 
@@ -400,16 +448,16 @@ sub doQuery
 	    $sort =~ s/-n$//;
 	    if ( $sortorder ) {
 		@results = sort {
-		    $a && $a->{$sort} ?
-                        ( $b && $b->{$sort} ?
+		    defined $a && defined $a->{$sort} ?
+                        ( defined $b && defined $b->{$sort} ?
                           $b->{$sort} <=> $a->{$sort} : -1 ) :
-                          ( $b ? 1 : 0 ) } @results;
+                          ( defined $b ? 1 : 0 ) } @results;
 	    } else {
 		@results = sort {
-		    $a && $a->{$sort} ?
-                        ( $b && $b->{$sort} ?
+		    defined $a && defined $a->{$sort} ?
+                        ( defined $b && defined $b->{$sort} ?
                           $a->{$sort} <=> $b->{$sort} : -1 )
-                        : ( $b ? 1 : 0 ) } @results;
+                        : ( defined $b ? 1 : 0 ) } @results;
 	    }
 	} else {
 	    if ( $sortorder ) {
@@ -434,7 +482,7 @@ sub doQuery
 		    print table({-border=>"0", -cellspacing=>"6", -cellpadding=>"4", -width=>"100%"},
 				Tr(
 				    td({-bgcolor=>"#ffffff", -valign=>"bottom"},
-				       font({-size=>"4"},
+				       h2(
 					    ("Next Action: ", $r->{'action_id.action'} ? $r->{'action_id.action'} : "none specified"),
 				       ))));
 		    $lastsection = $thissection;
@@ -491,7 +539,7 @@ sub doQuery
 	}
 	$row++;
 	foreach my $c ( @{$Format{$format}->{'columns'}} ) {
-	    my %colargs = ( -bgcolor=>$color );
+	    my %colargs = ( -bgcolor=>$color, -valign=>"top" );
 	    if ( exists $$c{'align'} ) {
 		$colargs{-align} = $$c{'align'};
 	    }
@@ -524,11 +572,16 @@ sub doQuery
                     $lastURL = $linkurl;
                 }
 	    }
-
+	    if ( $expand && $c->{'expand'} ) {
+		$str .= br;
+		## Assumes that the hash $r->{$c->{'expand'}} is user_id => count
+		foreach $uid ( keys %{$r->{$c->{'expand'}}} ) {
+		    $str .= "$r->{$c->{'expand'}}->{$uid}: " . User::getName($uid) . br;
+		}
+	    }
 	    print td(\%colargs, $str? $str : "&nbsp;"), "\n";
 	}
 	print end_Tr;
-
     }
     print end_table;
 

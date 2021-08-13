@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# Copyright(c) 2003-2007 Robert L. Brown.  This is licensed software
+# Copyright(c) 2003-2021 Robert L. Brown.  This is licensed software
 # only to be used with an explicit right-to-use license from the
 # copyright holder.
 

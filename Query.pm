@@ -779,6 +779,11 @@ sub extendedResults
     my %coms;
     my %mycoms;
     my %rats;
+    my %myrats;
+    my %ratsavg;
+    my %userratings;
+    my %usercomments;
+
     my $login_id = Login::getLoginId();
     if ( scalar @results > 0 ) {
         
@@ -797,27 +802,49 @@ sub extendedResults
         while( ($cid,$cnt)=SQLFetchData()) {
             $docs{$cid} = $cnt;
         }
+
+        ## Collect the comments sata, overall, for current user, and each user
+        
         SQLSend("SELECT candidate_id,COUNT(*) FROM comment WHERE $where GROUP BY candidate_id");
         while( ($cid,$cnt)=SQLFetchData()) {
             $coms{$cid} = $cnt;
         }
 
         ## Count the number of comments that were submitted by ME
-
         if ( $login_id ) {
             SQLSend("SELECT candidate_id,COUNT(*) FROM comment WHERE $where AND user_id = $login_id GROUP BY candidate_id");
             while( ($cid,$cnt)=SQLFetchData()) {
                 $mycoms{$cid} = $cnt;
             }
         }
-
-# select candidate.id,avg(rating) from candidate,rating where candidate.id = rating.candidate_id and candidate.owner_id = 1 group by candidate.id;
-
-        SQLSend("SELECT candidate_id,AVG(rating) from rating WHERE $where GROUP BY candidate_id");
-        while ( ($cid,$cnt)=SQLFetchData()) {
-            $rats{$cid} = $cnt;
+        SQLSend("SELECT candidate_id, user_id, COUNT(*) from comment where $where group by candidate_id, user_id");
+        while ( my ( $cid,$user,$cnt) = SQLFetchData()) {
+            if ( !exists $usercomments{$cid} ) {
+                $usercomments{$cid} = {};
+            }
+            $usercomments{$cid}->{$user} = $cnt;
         }
 
+        ## Collect the rating data, overall and for the current user
+
+        SQLSend("SELECT candidate_id,COUNT(rating),AVG(rating) from rating WHERE $where GROUP BY candidate_id");
+        while ( my ($cid,$cnt,$avg)=SQLFetchData()) {
+            $ratsavg{$cid} = $avg;
+            $rats{$cid} = $cnt;
+        }
+        # Compute the average of my ratings
+        SQLSend("SELECT candidate_id,COUNT(rating) from rating WHERE $where AND user_id = $login_id GROUP BY candidate_id");
+        while ( ($cid,$cnt)=SQLFetchData()) {
+            $myrats{$cid} = $cnt;
+        }
+
+        SQLSend("SELECT candidate_id, user_id, count(rating) from rating where $where group by candidate_id, user_id");
+        while ( my ($cid,$user,$cnt) = SQLFetchData()) {
+            if ( !exists $userratings{$cid} ) {
+                $userratings{$cid} = {};
+            }
+            $userratings{$cid}->{$user} = $cnt;
+        }
     }
 
     ##
@@ -825,17 +852,20 @@ sub extendedResults
     ##
 
     foreach my $r ( @results ) {
-        $r->{'comments'} = $coms{$r->{'id'}};
-        $r->{'mycomments'} = $mycoms{$r->{'id'}};
-        if ( $r->{'mycomments'} && $r->{'mycomments'} > 0 ) {
-            $r->{'commentstr'} = sprintf("%d/%d", $r->{'mycomments'}, $r->{'comments'});
-        } elsif ( $r->{'comments'} && $r->{'comments'} > 0 ) {
-            $r->{'commentstr'} = sprintf("%d", $r->{'comments'});
+        $r->{'comments'} = $coms{$r->{'id'}} || 0;
+        $r->{'mycomments'} = $mycoms{$r->{'id'}} || 0;
+        if ( $r->{'comments'} > 0 || $r->{'mycomments'} > 0 ) {
+            $r->{'commentstr'} = sprintf("%d / %d", $r->{'mycomments'}, $r->{'comments'});
         } else {
             $r->{'commentstr'} = "";
         }
+        $r->{'usercomments'} = $usercomments{$r->{'id'}};
         $r->{'documents'} = $docs{$r->{'id'}};
-        $r->{'ratings'} = $rats{$r->{'id'}};
+        $r->{'ratings'} = ($rats{$r->{'id'}} || 0);
+        $r->{'rating_avg'} = ($ratsavg{$r->{'id'}} || 0);
+        $r->{'myratings'} = ($myrats{$r->{'id'}} || 0);
+        $r->{'ratingstr'} = sprintf("%d / %d &nbsp;%.1f", $r->{'myratings'}, $r->{'ratings'}, $r->{'rating_avg'});
+        $r->{'userratings'} = $userratings{$r->{'id'}};
         my $delta = time()-$r->{'u_creation'};
         my $days = int($delta/(60*60*24));
         my $hours = int(($delta - $days*(60*60*24))/(60*60));
