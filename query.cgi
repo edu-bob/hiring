@@ -427,6 +427,8 @@ sub doQuery
     ##
 
     foreach $r ( @results ) {
+
+	# If there are any callbacks on columns, process them now
 	foreach my $c ( @{$Format{$format}->{'columns'}} ) {
 	    if ( exists $$c{'value'} ) {
               SW1: {
@@ -472,7 +474,7 @@ sub doQuery
     my $lastsection = "impossible";
     foreach $r ( @results ) {
 	my $doheading = 0;
-	if ( $groupby ) {
+	if ( $groupby && $groupby ne "none" ) {
 	    my $thissection;
 	    if ( $groupby eq 'action' ) {
 		# WOLF FENCE

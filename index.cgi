@@ -80,9 +80,9 @@ sub doFirstPage
 	      li(a({-href=>"reports.cgi?op=mail"}, "Send e-mail reminders")),
 	      li(a({ -href => "maintenance.cgi" }, "DB Maintenance")), "\n",
 	      ul(
-		  li(a({ -href => "manage.cgi?table=opening" }, "Manage Job Openings")), "\n",
-		  li(a({ -href => "manage.cgi?table=user" }, "Manage Users")), "\n",
-		  li(a({ -href => "manage.cgi?table=recruiter" }, "Manage Recruiters")), "\n",
+		  li(a({ -href => "manage.cgi?table=opening" }, "Manage/Add Job Openings")), "\n",
+		  li(a({ -href => "manage.cgi?table=user" }, "Manage/Add Users")), "\n",
+		  li(a({ -href => "manage.cgi?table=recruiter" }, "Manage/Add Recruiters")), "\n",
 		  
 	      ),
 	      );
@@ -103,7 +103,7 @@ sub doFirstPage
       } 
       if ( isLoggedIn()) {
           if ( isAdmin() ) {
-              print ul(li(a({-href=>"user.cgi"}, font({-size=>"4"}, "Manage user accounts"))));
+              print ul(li(a({-href=>"user.cgi"}, font({-size=>"4"}, "Manage existing user accounts"))));
           } else {
               print ul(li(a({-href=>"user.cgi"}, font({-size=>"4"}, "Manage your login"))));
           }
