@@ -38,18 +38,18 @@ use Application;
 sub doManage
 {
     my $table = shift;
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
     
     print header;
     ConnectToDatabase();
     
-    my $self_url = self_url();
-    my $url = url();
+    my $self_url = url(-absolute => 1, -query=>1);
+    my $url = url(-absolute => 1);
     print doHeading({-title=>"Manage \"$table->{'heading'}\""}), "\n";
 
     print h2("Add to \"$table->{'heading'}\""), "\n";
     
-    print Layout::startForm({-action=>url(), -status=>1}), "\n";
+    print Layout::startForm({-action=>url(-absolute=>1), -status=>1}), "\n";
     print hidden({-name=>"table", -default=>"$table->{'table'}"}), "\n";
     if ( param("back" ) ) {
 	print hidden({-name=>"back", -default=>param("back")});
@@ -61,7 +61,7 @@ sub doManage
     print Layout::endForm;
     
     print hr, h2("Edit/Delete \"$table->{'heading'}\""), "\n";
-    print Layout::startForm({-action=>url()}), "\n";
+    print Layout::startForm({-action=>url(-absolute=>1)}), "\n";
     print hidden({-name=>"table", -default=>"$table->{'table'}"}), "\n";
     print doEditTable({-table=>$table});
     print Layout::endForm, "\n";
@@ -77,19 +77,19 @@ sub doManage
 
 sub doAdd
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $table = shift;
 
     print doHeading({-title=>"Add \"$table->{'heading'}\""});
 
-    print Layout::startForm({-action=>url(), -status=>1}), "\n";
+    print Layout::startForm({-action=>url(-absolute=>1), -status=>1}), "\n";
     my $changes = new Changes;
-#    print p(self_url());
+#    print p(url(-absolute => 1, -query=>1));
     print doEntryForm({-table=>$table});
     auditUpdate($changes);
     param("op", "addfinish");
@@ -98,7 +98,7 @@ sub doAdd
     if ( param("back" ) ) {
 	print hidden({-name=>"back", -default=>param("back")});
     } else {
-        my $url = url() . "?table=$table->{'table'};op=add";
+        my $url = url(-absolute=>1) . "?table=$table->{'table'};op=add";
         print hidden({-name=>"back", -default=>$url});
     }
         
@@ -114,7 +114,7 @@ sub doAdd
 
 sub doAddFinish
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     my $argv = shift;
     argcvt($argv, ['table'], ['back']);
@@ -125,13 +125,13 @@ sub doAddFinish
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
     my $url;
     if ( $back ) {
         $url = $back;
     } else {
-        $url = url() . "?table=$table->{'table'}";
+        $url = url(-absolute=>1) . "?table=$table->{'table'}";
     }
     print doHeading({-title=>"Add \"$table->{'heading'}\"",
                      -head=>meta({-http_equiv=>"Refresh",
@@ -187,11 +187,11 @@ sub doEditDelete
 
 sub doEditInternal
 {
-    Layout::doMustLogin(self_url());
+    Layout::doMustLogin(url(-absolute => 1, -query=>1));
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $table = shift;
     my $pk = shift;
 
@@ -199,7 +199,7 @@ sub doEditInternal
     my $record = getRecordById({-table=>$table, -id=>$pk});
 
     param("op", "editfinish");
-    print Layout::startForm({-action=>url(), -status=>1}), "\n",
+    print Layout::startForm({-action=>url(-absolute=>1), -status=>1}), "\n",
       hidden({-name=>"op", -default=>"editfinish"}), "\n";
     print hidden({-name=>"table", -default=>"$table->{'table'}"}), "\n";
 
@@ -217,12 +217,12 @@ sub doEditInternal
 
 sub doEditFinish
 {
-    Layout::doMustLogin(self_url());
+    Layout::doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $table = shift;
 
     my $pk = param("pk");
@@ -231,7 +231,7 @@ sub doEditFinish
     if ( param("reload") ) {
         $reload = param("reload");
     } else {
-        $reload = url() . "?table=$table->{'table'}";
+        $reload = url(-absolute=>1) . "?table=$table->{'table'}";
     }
 
     print doHeading({-title=>"Finish Edit \"$table->{'heading'}\"",
@@ -254,12 +254,12 @@ sub doEditFinish
 
 sub doDelete
 {
-    Layout::doMustLogin(self_url());
+    Layout::doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $table = shift;
 
     my $pk = shift;
@@ -268,7 +268,7 @@ sub doDelete
     if ( param("reload") ) {
         $reload = param("reload");
     } else {
-        $reload = url() . "?table=$table->{'table'}";
+        $reload = url(-absolute=>1) . "?table=$table->{'table'}";
     }
 
     print doHeading({-title=>"Delete \"$table->{'heading'}\"",
@@ -294,7 +294,7 @@ sub doDisplay
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $table = shift;
     my $id = param("id");
 

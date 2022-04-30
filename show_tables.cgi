@@ -23,7 +23,7 @@ my ($server, $sock, $host);
 my $db_host = "localhost";         # where is the database?
 my $db_source = "DBI:mysql:hiring";
 
-my $self_url = self_url();
+my $self_url = self_url(-absolute=>,-query=>1);
 
 $server = param('server') or $server = $db_host;
 

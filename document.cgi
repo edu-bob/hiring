@@ -27,7 +27,7 @@ if ( $mustLogIn && ref $mustLogIn ) {
     $mustLogIn = $mustLogIn->{'value'};
 }
 if ( $mustLogIn && !isLoggedIn() ) {
-    doMustLogin(self_url());;
+    doMustLogin(url(-absolute => 1, -query=>1));;
 }
 
 if ( param("op") ) {

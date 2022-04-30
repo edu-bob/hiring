@@ -214,7 +214,7 @@ sub doWeekly
     print end_ul, "\n";
     
     print hireRatio();
-    print Footer(self_url());
+    print Footer(self_url(-absolute=>1));
     print end_html;
 }
 

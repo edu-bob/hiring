@@ -95,7 +95,7 @@ sub firstPage
 	  
       };
 	
-	print Footer(self_url());
+	print Footer(url(-absolute => 1, -query=>1));
 	print end_html;
 }
 

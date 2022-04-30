@@ -113,7 +113,7 @@ exit(0);
 
 sub doFirstPage
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
     
     print header;
     ConnectToDatabase();
@@ -122,7 +122,7 @@ sub doFirstPage
     if ( !defined param("candidate_id") ) {
 	print start_html;
 	Utility::redError("There must at least be a candidate id specified");
-	print Footer({-url=>self_url()}), end_html;
+	print Footer({-url=>url(-absolute => 1, -query=>1)}), end_html;
 	return;
     }
     
@@ -188,7 +188,7 @@ sub doScheduleForm
 			       ],
 		     -onload=>"newtimes();"}), "\n";
 
-    print Layout::startForm({-name=>"form", -action=>url()}), "\n";
+    print Layout::startForm({-name=>"form", -action=>url(-absolute=>1)}), "\n";
 
     param("op", "save");
     print hidden({-name=>"op", -default=>"save"});
@@ -434,7 +434,7 @@ sub doSave
 
     my $doreplace = defined param("schedule_id");
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
     my $schedule_id;
     if ( $doreplace ) {
@@ -741,7 +741,7 @@ sub doPreformat
     my $q = new CGI;
     $q->param("op", "format");
     $q->delete("Format");
-    print $q->redirect(-location=>$q->self_url(), -method=>"get");
+    print $q->redirect(-location=>$q->url(-absolute => 1, -query=>1), -method=>"get");
 }
 
 
@@ -758,7 +758,7 @@ sub doView
     print start_html;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $schedule_id = param("schedule_id");
 
   BODY: {
@@ -793,12 +793,12 @@ sub doView
 
 sub doEdit
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $schedule_id = param("schedule_id");
 
     doScheduleForm({-op=>"edit",

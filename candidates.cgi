@@ -62,7 +62,7 @@ if ( $mustLogIn && ref $mustLogIn ) {
     $mustLogIn = $mustLogIn->{'value'};
 }
 if ( $mustLogIn && !isLoggedIn() ) {
-    doMustLogin(self_url());;
+    doMustLogin(url(-absolute => 1, -query=>1));;
 }
 
 
@@ -164,14 +164,14 @@ sub doFirstPage
     print doHeading({-title=>"Add a Candidate"});
 
     param("op", "addfinish");
-    print Layout::startForm({-action=>url()}), "\n";
+    print Layout::startForm({-action=>url(-absolute=>1)}), "\n";
     print hidden({-name=>"op", -default=>"addfinish"}), "\n";
     print doEntryForm({-table=>\%::CandidateTable});
     print submit({-name=>"Add"});
     print Layout::endForm;
 
     print h2("Edit/Delete Candidates"), hr, "\n";
-    print Layout::startForm({-action=>url()});
+    print Layout::startForm({-action=>url(-absolute=>1)});
     print doEditTable({-table=>\%::CandidateTable});
     print Layout::endForm;
 
@@ -184,7 +184,7 @@ sub doFirstPage
 
 sub doAdd
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
@@ -223,7 +223,7 @@ sub doAdd
     param("op", "addfinish");
     param("pass", 1);
     print Layout::startForm({
-	-action=>url(),
+	-action=>url(-absolute=>1),
 	-enctype=>'multipart/form-data',
 	-status=>1}),
     hidden({-name=>"op", -default=>"addfinish"}), "\n",
@@ -309,8 +309,8 @@ sub doAdd
 sub doAddFinish
 {
     my $insert_id;
-    my $url = url();
-    my $self_url = self_url();
+    my $url = url(-absolute=>1);
+    my $self_url = url(-absolute => 1, -query=>1);
 
     print header;
     ConnectToDatabase();
@@ -589,7 +589,7 @@ sub doEditDelete
 
 sub doEdit
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
@@ -601,7 +601,7 @@ sub doEdit
 
 sub doEditInternal
 {
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $pk = shift;
     my $candidate = Candidate::getRecord($pk);
 
@@ -615,7 +615,7 @@ sub doEditInternal
   BODY: {
 #	  print Utility::ObjDump(\%candidate);
       param("op", "editfinish");
-      print Layout::startForm({-action=>url(), -status=>1}), "\n";
+      print Layout::startForm({-action=>url(-absolute=>1), -status=>1}), "\n";
       print hidden({-name=>"op", -default=>"editfinish"}), "\n";
       print submit({-name=>"Update"});
       param("id", "$pk");
@@ -811,12 +811,12 @@ sub doEditFinish
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $candidate_id = param("id");
     my $candidate = Candidate::getRecord($candidate_id);
     my $changes;
 
-    my $url = url();
+    my $url = url(-absolute=>1);
     my $reload = "$url?op=get&id=$candidate_id";
     print doHeading({ -title=>"Finish Edit $$candidate{'name'}",
 		      -head=>meta({-http_equiv=>"Refresh",
@@ -1145,7 +1145,7 @@ sub doDelete
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $pk = shift;
     print doHeading({-title=>"Delete Job Candidate"});
 
@@ -1182,7 +1182,7 @@ END
 
     ## $self_url can be used to come back to this page later
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $id = param("id");
 
     ## Fetch the candidate record and make sure that it isn't hidden - only
@@ -1215,7 +1215,7 @@ END
 	    -onload=>"fixActionList($$candidate{'opening_id'},'action_id_new', $$candidate{'action_id'});",
 		    });
 
-    print Layout::startForm({-action=>url()});
+    print Layout::startForm({-action=>url(-absolute=>1)});
     param("op", "edit");
     print hidden({-name=>"op", -default=>"edit"});
     print hidden({-name=>"id", -default=>"$id"});
@@ -1235,9 +1235,9 @@ END
 	    "Create an interview schedule")), "\n";
     print li({-class=>"clickable"},a({-href=>"reference-letter.cgi?id=$id"}, "Create ref check letter"));
 
-    my $auditurl = url() . "?op=audit&id=$id";
+    my $auditurl = url(-absolute=>1) . "?op=audit&id=$id";
     print li({-class=>"clickable"},a({-href=>$auditurl}, "Show change log")), "\n";
-    my $rejecturl = url() . "?op=reject&id=$id";
+    my $rejecturl = url(-absolute=>1) . "?op=reject&id=$id";
     if ( $user->{'changestatus'} eq 'Y' || isAdmin() ) {
         print li({-class=>"clickable"},a({-href=>"javascript:doreject('$rejecturl');"}, "Reject candidate")), "\n";
     }
@@ -1290,7 +1290,7 @@ END
     if ( scalar @comments == 0 ) {
 	print p("None.");
     } else {
-	my $url = url();
+	my $url = url(-absolute=>1);
 	print p(a({-href=>"$url?op=viewallcomments&candidate=$id"},"View Full Comments Together"));
 	print start_table({-cellpadding=>"4"});
 	print Tr(
@@ -1388,7 +1388,7 @@ END
 			   -cellpadding=>4,
 			   -bgcolor=>"#e0e0e0"}),
 	start_Tr, start_td;
-	print Layout::startForm({-action=>url(), -enctype=>'multipart/form-data'});
+	print Layout::startForm({-action=>url(-absolute=>1), -enctype=>'multipart/form-data'});
 	print h1("Make changes to $$candidate{'name'}");
 
 	print h2(a({-name=>"comment"}, "Add a Comment")), "\n";
@@ -1573,7 +1573,7 @@ sub doViewComment
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $id = param("id");
 
     my $comment = Comment::getRecord($id);
@@ -1586,7 +1586,7 @@ sub doViewComment
 	return;
     }
 
-    my $reload = url() . "?op=get;id=$candidate_id";
+    my $reload = url(-absolute=>1) . "?op=get;id=$candidate_id";
     my $username = User::getName($$comment{'user_id'});
 
     print doHeading({-title=>"By $username on $$comment{'creation'}"});
@@ -1613,14 +1613,14 @@ sub doViewComment
 
     print start_p;
     if ( $prev > 0 ) {
-	my $link = url() . "?op=viewcomment;id=$prev;candidate=$candidate_id";
+	my $link = url(-absolute=>1) . "?op=viewcomment;id=$prev;candidate=$candidate_id";
 	print a({-href=>$link}, "< Previous comment");
 	if ( $next > 0 ) {
 	    print " | ";
 	}
     }
     if ( $next > 0 ) {
-	my $link = url() . "?op=viewcomment;id=$next;candidate=$candidate_id";
+	my $link = url(-absolute=>1) . "?op=viewcomment;id=$next;candidate=$candidate_id";
 	print a({-href=>$link}, "Next comment >");
     }
     print end_p;
@@ -1634,9 +1634,9 @@ sub doViewAllComments
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $candidate_id = param("candidate");
-    my $reload = url() . "?op=get;id=$candidate_id";
+    my $reload = url(-absolute=>1) . "?op=get;id=$candidate_id";
 
     my $candidate = Candidate::getRecord($candidate_id);
 
@@ -1668,7 +1668,7 @@ sub printUploadSection
     my $id = shift;
 
     print hr(), h2(a({-name=>"upload"},"Upload a document"));
-    print Layout::startForm({-action=>url(), -enctype=>'multipart/form-data'});
+    print Layout::startForm({-action=>url(-absolute=>1), -enctype=>'multipart/form-data'});
     param("op", "uploadfinish");
     print hidden({-name=>"op", -default=>"uploadfinish"});
     print hidden({-name=>"id", -default=>"$id"});
@@ -1702,7 +1702,7 @@ sub doUpload
 {
     my $id = param("id");
     param("op","get");
-    my $reload = self_url() . "#upload";
+    my $reload = url(-absolute => 1, -query=>1) . "#upload";
     doMustLogin($reload);
 
     my $q = new CGI;
@@ -1790,7 +1790,7 @@ sub doAddComment
 {
     my $candidate_id = param("id");
     param("op","get");
-    my $reload = self_url() . "#comment";
+    my $reload = url(-absolute => 1, -query=>1) . "#comment";
     doMustLogin($reload);
 
     my $q = new CGI;
@@ -1800,7 +1800,7 @@ sub doAddRating
 {
     my $candidate_id = param("id");
     param("op","get");
-    my $reload = self_url() . "#rating";
+    my $reload = url(-absolute => 1, -query=>1) . "#rating";
     doMustLogin($reload);
 
     my $q = new CGI;
@@ -1816,14 +1816,14 @@ sub doAddRating
 
 sub doAddStuffFinish
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     my ($rating_id, $comment_id, $upload_id);
 
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
     my $candidate_id = param("candidate_id");
     my $candidate = Candidate::getRecord($candidate_id);
@@ -1832,7 +1832,7 @@ sub doAddStuffFinish
     my $user = User::getRecord($user_id);
     my $user_name = User::getName($user_id);
 
-    my $url = url();
+    my $url = url(-absolute=>1);
     my $reload = "$url?op=get&id=$candidate_id";
     print doHeading({ -title=>"Save Additions",
 		       -head=>meta({-http_equiv=>"Refresh",
@@ -2051,7 +2051,7 @@ sub doAddStuffFinish
 
 sub doEditComment
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     ConnectToDatabase();
@@ -2067,14 +2067,14 @@ sub doEditComment
     }
 
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
     print doHeading({-title=>"Edit $table->{'heading'}"});
 
     my $record = Comment::getRecord($comment_id);
 
     param("op", "editcommentfinish");
-    print Layout::startForm({-action=>url()}), "\n",
+    print Layout::startForm({-action=>url(-absolute=>1)}), "\n",
     hidden({-name=>"op", -default=>"editcommentfinish"}), "\n";
 
     print hidden({-name=>"id", -default=>"$comment_id"});
@@ -2093,9 +2093,9 @@ sub doEditCommentFinish
 
     my $candidate_id = param("candidate");
     my $comment_id = param("id");
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
-    my $url = url();
+    my $url = url(-absolute=>1);
     my $reload = "$url?op=get&id=$candidate_id";
     print doHeading({-head=>meta({-http_equiv=>"Refresh",-content=>"$::REFRESH;URL=$reload"}),
 		     -title=>"Finish Edit Comment",
@@ -2126,8 +2126,8 @@ sub doAudit
     print header;
     ConnectToDatabase();
     my $candidate_id = param("id"); # candidate_id
-    my $self_url = self_url();
-    my $reload = url() . "?op=get;id=$candidate_id";
+    my $self_url = url(-absolute => 1, -query=>1);
+    my $reload = url(-absolute=>1) . "?op=get;id=$candidate_id";
 
     my $candidate = Candidate::getRecord($candidate_id);
     if ( $$candidate{'hide'} && !isAdmin() ) {
@@ -2271,7 +2271,7 @@ sub doTest
 
 sub doReject
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     print header;
     print doHeading({
@@ -2279,8 +2279,8 @@ sub doReject
     });
     ConnectToDatabase();
     my $id = param("id"); # candidate_id
-    my $self_url = self_url();
-    my $reload = url() . "?op=get;id=$id";
+    my $self_url = url(-absolute => 1, -query=>1);
+    my $reload = url(-absolute=>1) . "?op=get;id=$id";
 
     my $user = getLoginId();
     my $candidate = Candidate::getRecord($id);
@@ -2397,7 +2397,7 @@ sub doDump
     print header;
     ConnectToDatabase();
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $id = param("id");
     my %c = Candidate::getRecordById({-table=>\%::CandidateTable, -id=>$id});
     if ( $c{'hide'} && !isAdmin() ) {

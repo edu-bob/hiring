@@ -2332,7 +2332,7 @@ sub addFkEdit
         return "";
     }
 
-    my $back =  $$argv{'back'} ? $$argv{'back'} : self_url();
+    my $back =  $$argv{'back'} ? $$argv{'back'} : url(-absolute => 1, -query=>1);
     my $othertable = $$tcol{'values'}->{'table'};
     my $escback = CGI::escape($back);
     return a({
@@ -2557,7 +2557,7 @@ sub doAccessDenied
 {
     print doHeading({-title=>"Access Denied"});
     print p("Access to this candidate is limited to the hiring managers");
-    print Footer({-url=>self_url()});
+    print Footer({-url=>url(-absolute => 1, -query=>1)});
 
     print end_html;
 }
@@ -2580,7 +2580,8 @@ sub fullURL
             $host = `hostname`;
         }
     }
-    return "http://$host" . Utility::rootURL() . $script;
+    return # "http://$host" .
+        Utility::rootURL() . $script;
 }
 
 
@@ -2599,7 +2600,7 @@ sub doMustLogin
         ConnectToDatabase();
         my $link = shift;
         if ( !defined $link ) {
-            $link = self_url();
+            $link = url(-absolute => 1, -query=>1);
         }
         print header;
         print Layout::doLoginForm({

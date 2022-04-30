@@ -102,7 +102,7 @@ sub doFirstPage
       }
       if ( isAdmin() ) {
           param("op", "step2");
-          print Layout::startForm({-action=>url()}), "\n";
+          print Layout::startForm({-action=>url(-relative => 1)}), "\n";
           print hidden({-name=>"op", -default=>"step2"}), "\n";
 
           print start_table({-border=>"0"}), "\n";
@@ -163,7 +163,7 @@ sub doUserForm
       }
 
       param("op", "go");
-      print Layout::startForm({-action=>url()}), "\n";
+      print Layout::startForm({-action=>url(-absolute=>1)}), "\n";
       print hidden({-name=>"op", -default=>"go"}), "\n";
 
       print start_table({-border=>"0"}), "\n";

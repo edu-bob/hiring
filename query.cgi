@@ -180,7 +180,7 @@ if ( $mustLogIn && ref $mustLogIn ) {
     $mustLogIn = $mustLogIn->{'value'};
 }
 if ( $mustLogIn && !isLoggedIn() ) {
-    doMustLogin(self_url());;
+    doMustLogin(url(-absolute => 1, -query=>1));;
 }
 
 
@@ -248,7 +248,7 @@ sub doGo
     my $q = new CGI;
     $q->param("op", "query");
     $q->delete("Search");
-    print $q->redirect(-location=>$q->self_url(), -method=>"get");
+    print $q->redirect(-location=>$q->url(-absolute => 1, -query=>1), -method=>"get");
 }
 
 ##
@@ -264,7 +264,7 @@ sub doQuery
 	$format = "standard";
     }
 
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
     my $groupby = param("groupby");
     my $sort = param("sort");
     my $sortorder = param("sortorder");
@@ -303,7 +303,7 @@ sub doQuery
 
     my $nolinks = (defined param("nolinks") && param("nolinks")) || $Format{$format}->{'nolinks'};
     my $cookie = cookie({-name=>"query",
-			 -value=>self_url()});
+			 -value=>url(-absolute => 1, -query=>1)});
 
 # Make various sorting URLs
 
@@ -314,37 +314,37 @@ sub doQuery
     }
 
     param("sort", "id-n");
-    $sorturl{'id'} = self_url();
+    $sorturl{'id'} = url(-absolute => 1, -query=>1);
 
     param("sort", "name");
-    $sorturl{'name'} = self_url();
+    $sorturl{'name'} = url(-absolute => 1, -query=>1);
 
     param("sort", "status");
-    $sorturl{'status'} = self_url();
+    $sorturl{'status'} = url(-absolute => 1, -query=>1);
 
     param("sort", "comments-n");
-    $sorturl{'comments'} = self_url();
+    $sorturl{'comments'} = url(-absolute => 1, -query=>1);
 
     param("sort", "documents-n");
-    $sorturl{'documents'} = self_url();
+    $sorturl{'documents'} = url(-absolute => 1, -query=>1);
 
     param("sort", "rating_avg-n");
-    $sorturl{'ratings'} = self_url();
+    $sorturl{'ratings'} = url(-absolute => 1, -query=>1);
 
     param("sort", "action_id.precedence-n");
-    $sorturl{'action_id'} = self_url();
+    $sorturl{'action_id'} = url(-absolute => 1, -query=>1);
 
     param("sort", "owner_id.name");
-    $sorturl{'owner'} = self_url();
+    $sorturl{'owner'} = url(-absolute => 1, -query=>1);
 
     param("sort", "opening_id.description");
-    $sorturl{'position'} = self_url();
+    $sorturl{'position'} = url(-absolute => 1, -query=>1);
 
     param("sort", "age-n");
-    $sorturl{'age'} = self_url();
+    $sorturl{'age'} = url(-absolute => 1, -query=>1);
 
     param("sort", "referrer");
-    $sorturl{'referrer'} = self_url();
+    $sorturl{'referrer'} = url(-absolute => 1, -query=>1);
 
     if ( $param_sort ) {
 	param("sort", $url_sort);
@@ -360,15 +360,15 @@ sub doQuery
 
     print doHeading({-title=>"Query Candidates Results"});
 
-    my $expand_action = self_url();
+    my $expand_action = url(-absolute => 1, -query=>1);
 
     Delete("sort","sortorder", "groupby");
     param("groupby","action");
-    my $groupby_action = self_url();
+    my $groupby_action = url(-absolute => 1, -query=>1);
     param("groupby", "status");
-    my $groupby_status = self_url();
+    my $groupby_status = url(-absolute => 1, -query=>1);
     Delete("groupby");
-    my $groupby_none = self_url();
+    my $groupby_none = url(-absolute => 1, -query=>1);
 
     if ( $param_sort ) {
         param("sort", $param_sort);
@@ -396,11 +396,11 @@ sub doQuery
 
     if ( $expand ) {
 	Delete("expand");
-	print a({-href=>self_url()}, "Unexpand");
+	print a({-href=>url(-absolute => 1, -query=>1)}, "Unexpand");
     } else {
 	Delete("expand");
 	param("expand", 1);
-	print a({-href=>self_url()}, "Expand");
+	print a({-href=>url(-absolute => 1, -query=>1)}, "Expand");
     }
     print end_p;
     
@@ -568,7 +568,7 @@ sub doQuery
 		}
 	    }
 	    if ( !$nolinks && exists $$c{'link'} ) {
-		my $linkurl = &{$$c{'link'}}($$r{'id'});;
+		my $linkurl = &{$$c{'link'}}($$r{'id'});
 		$str = a({-href=>$linkurl}, $$r{$$c{'field'}});
                 if ( exists $$c{'warpable'} ) {
                     $lastURL = $linkurl;

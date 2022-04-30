@@ -20,7 +20,7 @@ my ($server, $sock, $host);
 
 my $file = param("sql");
 my $version = param("version");
-my $self_url = self_url();
+my $self_url = url(-absolute => 1, -query=>1);
 
 ConnectToDatabase();
 

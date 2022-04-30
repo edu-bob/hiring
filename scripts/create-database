@@ -9,7 +9,7 @@ fi
 
 SCHEMA_FILE=maintenance/create-schema.sql
 CONTENT_FILE=maintenance/load-tables.sql
-BACKUP_FILE=mysqldump-20210208.sql
+BACKUP_FILE=hiring.sql
 ROOT_PW=Oakmead1270
 DATA_LOADED=scripts/DATA_IS_LOADED
 

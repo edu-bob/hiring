@@ -35,7 +35,7 @@ sub doFirstPage
 	print end_html;
 	exit(0);
     }
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 #    Utility::setHTMLErrors(0);
     ConnectToDatabase() || Utility::preHTMLAbort("Cannot connect to Database");
     
@@ -49,7 +49,7 @@ sub doFirstPage
       } else {
 	  $title = "Candidate Tracker";
       }
-      print doHeading({-title=>$title} ), "\n";
+      print doHeading({-title=>"$title"} ), "\n";
 
 #      Utility::ObjDump(Param::getValueByName('title'));
       my $mustLogIn = Param::getValueByName('must-log-in');
@@ -126,7 +126,7 @@ sub doFirstPage
 	  my $mylist = "query.cgi?op=query;status=NEW;status=ACTIVE;owner_id=" . getLoginId();
 	  print li(a({-href=>$mylist}, font({-size=>"4"}, "Candidates owned by $name")));
       } else {
-	  my @self_url = self_url();
+	  my @self_url = url(-absolute => 1, -query=>1);
 	  print li(a({-href=>"loginout.cgi?link=$self_url"}, font({-size=>"4"}, "Log in")));
       }
 

@@ -214,7 +214,7 @@ sub doCheck
 
 sub doAudit
 {
-    doMustLogin(self_url());
+    doMustLogin(url(-absolute => 1, -query=>1));
 
     my $table = shift;
 
@@ -223,12 +223,12 @@ sub doAudit
     print doHeading({-title=>"Changes to \"$table->{'heading'}\""}), "\n";
 
     my $candidate_id = param("id"); # candidate_id
-    my $self_url = self_url();
+    my $self_url = url(-absolute => 1, -query=>1);
 
 	my $changes = auditGetRecords({-table=>$table});
 	print $changes->listHTML({-table=>$table});
 
-    my $backurl = url() . "?table=$table->{'table'}";
+    my $backurl = url(-absolute=>1) . "?table=$table->{'table'}";
     print p(a({-href=>$backurl}, "Back to \"$table->{'heading'}\" edit page"));
     print Footer({-url=>"$self_url"}), end_html;
     print end_html;

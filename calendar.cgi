@@ -33,7 +33,7 @@ if ( $mustLogIn && ref $mustLogIn ) {
     $mustLogIn = $mustLogIn->{'value'};
 }
 if ( $mustLogIn && !isLoggedIn() ) {
-    doMustLogin(self_url());;
+    doMustLogin(url(-absolute => 1, -query=>1));;
 }
 
 ##
@@ -141,7 +141,7 @@ sub firstPage
 	  print hidden({-name=>"type", -default=>$type});
       print submit({-name=>"Create Calendar"}), Layout::endForm, "\n";
   };
-    print Footer({-url=>self_url()}), end_html, "\n";
+    print Footer({-url=>url(-absolute => 1, -query=>1)}), end_html, "\n";
 }
 
 use Date::Manip qw(ParseDate UnixDate);
@@ -152,7 +152,7 @@ sub doSetup
 	$q->param("op", "go");
 	$q->delete("Create Calendar");
 	$q->delete("Search");
-	print $q->redirect(-location=>$q->self_url(), -method=>"get");
+	print $q->redirect(-location=>$q->url(-absolute => 1, -query=>1), -method=>"get");
 }
 
 sub doGo
@@ -189,7 +189,7 @@ sub doGo
 #	}
 #	print end_table;
 #    }
-    print Footer({-url=>self_url()}), end_html, "\n";
+    print Footer({-url=>url(-absolute => 1, -query=>1)}), end_html, "\n";
 }
 
 
